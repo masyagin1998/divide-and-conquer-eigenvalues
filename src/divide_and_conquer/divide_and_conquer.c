@@ -10,7 +10,10 @@ static matrix_type_t matrix_from_two_blocks(const matrix_type_t a, const matrix_
     unsigned i, j;
     
     matrix_type_t res = matrix_create(matrix_height(a) + matrix_height(b), matrix_width(a) + matrix_width(b), 0.0);
-
+    if (res == NULL) {
+        goto err0;
+    }
+    
     for (i = 0; i < matrix_height(a); i++) {
         for (j = 0; j < matrix_width(a); j++) {
             matrix_set(res, i, j, matrix_get(a, i, j));
@@ -24,6 +27,9 @@ static matrix_type_t matrix_from_two_blocks(const matrix_type_t a, const matrix_
     }
 
     return res;
+
+ err0:
+    return NULL;
 }
 
 static matrix_type_t matrix_transpose(const matrix_type_t mat)
@@ -31,6 +37,9 @@ static matrix_type_t matrix_transpose(const matrix_type_t mat)
     unsigned i, j;
     
     matrix_type_t res = matrix_create(matrix_width(mat), matrix_height(mat), 0.0);
+    if (res == NULL) {
+        goto err0;
+    }
 
     for (i = 0; i < matrix_width(mat); i++) {
         for (j = 0; j < matrix_height(mat); j++) {
@@ -39,6 +48,9 @@ static matrix_type_t matrix_transpose(const matrix_type_t mat)
     }
 
     return res;
+
+ err0:
+    return NULL;
 }
 
 static matrix_type_t matrix_mul(const matrix_type_t a, const matrix_type_t b)
@@ -46,6 +58,10 @@ static matrix_type_t matrix_mul(const matrix_type_t a, const matrix_type_t b)
     unsigned i, j, k;
     
     matrix_type_t res = matrix_create(matrix_height(a), matrix_width(b), 0.0);
+    if (res == NULL) {
+        goto err0;
+    }
+    
     for (i = 0; i < matrix_height(res); i++) {
         for (j = 0; j < matrix_width(res); j++) {
             double cell = 0.0;
@@ -55,14 +71,14 @@ static matrix_type_t matrix_mul(const matrix_type_t a, const matrix_type_t b)
             matrix_set(res, i, j, cell);
         }
     }
-    
 
     return res;
+
+ err0:
+    return NULL;
 }
 
-#include <stdio.h>
-
-static matrix_type_t matrix_get_permut(const matrix_type_t mat)
+static matrix_type_t matrix_permut(const matrix_type_t mat)
 {
     unsigned i, j;
     
@@ -71,10 +87,16 @@ static matrix_type_t matrix_get_permut(const matrix_type_t mat)
     unsigned*idxs;
     
     arr = (double*) malloc(matrix_height(mat) * sizeof(double));
+    if (arr == NULL) {
+        goto err0;
+    }
     for (i = 0; i < matrix_height(mat); i++) {
         arr[i] = matrix_get(mat, i, i);
     }
     idxs = malloc(matrix_height(mat) * sizeof(unsigned));
+    if (idxs == NULL) {
+        goto err1;
+    }
     for (i = 0; i < matrix_height(mat); i++) {
         idxs[i] = i;
     }
@@ -96,11 +118,21 @@ static matrix_type_t matrix_get_permut(const matrix_type_t mat)
     }
 
     res = matrix_create(matrix_height(mat), matrix_width(mat), 0.0);
+    if (res == NULL) {
+        goto err2;
+    }
     for (i = 0; i < matrix_height(res); i++) {
         matrix_set(res, i, idxs[i], 1.0);
     }
 
     return res;
+
+ err2:
+    free(idxs);
+ err1:
+    free(arr);
+ err0:
+    return NULL;
 }
 
 enum LAMBDA_TYPE
@@ -112,6 +144,8 @@ enum LAMBDA_TYPE
 
 #define is_zero(v) ((v) < eps)
 #define are_equal(v1, v2) ((fabs((v1) - (v2))) < eps)
+
+#include <stdio.h>
 
 static void matrix_divide_and_conquer_inner(matrix_type_t mat, unsigned b_ind, unsigned e_ind, matrix_type_t*Q, matrix_type_t*lambda, double eps)
 {
@@ -161,7 +195,7 @@ static void matrix_divide_and_conquer_inner(matrix_type_t mat, unsigned b_ind, u
 
     /* Calculate P, P_t and D. */
     D = matrix_from_two_blocks(lambda1, lambda2);
-    P = matrix_get_permut(D);    /* P.    */
+    P = matrix_permut(D);        /* P.    */
     P_t = matrix_transpose(P);   /* P_t.  */
     tmp = matrix_mul(P, D);
     matrix_free(D);
