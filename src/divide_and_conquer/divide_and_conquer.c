@@ -103,6 +103,16 @@ static matrix_type_t matrix_get_permut(const matrix_type_t mat)
     return res;
 }
 
+enum LAMBDA_TYPE
+{
+    LAMBDA_TYPE_NORMAL,          /* lambda, found by solving secular equation for (d_i, d_i+1). */
+    LAMBDA_TYPE_DEFLATED_ZERO_U, /* deflated lambda with u[i][0] = 0.                           */
+    LAMBDA_TYPE_DEFLATED_EQ_D,   /* deflated lambda with d[i][i] = d[i+1][i+1].                 */
+};
+
+#define is_zero(v) ((v) < eps)
+#define are_equal(v1, v2) ((fabs((v1) - (v2))) < eps)
+
 static void matrix_divide_and_conquer_inner(matrix_type_t mat, unsigned b_ind, unsigned e_ind, matrix_type_t*Q, matrix_type_t*lambda, double eps)
 {
     unsigned m;
@@ -125,7 +135,9 @@ static void matrix_divide_and_conquer_inner(matrix_type_t mat, unsigned b_ind, u
     matrix_type_t v;
     matrix_type_t u;
 
-    double*lambdas;
+    enum LAMBDA_TYPE *lambda_types;
+    double           *lambdas;
+    unsigned         lambdas_len;
     
     if ((e_ind - b_ind == 1)) {
         (*lambda) = matrix_create(1, 1, matrix_get(mat, b_ind, b_ind));
@@ -180,27 +192,53 @@ static void matrix_divide_and_conquer_inner(matrix_type_t mat, unsigned b_ind, u
     u = tmp;                     /* u.    */
 
     /* Calculate λ. */
+    lambda_types = (enum LAMBDA_TYPE*) malloc(matrix_height(D) * sizeof(enum LAMBDA_TYPE));
     lambdas = (double*) malloc(matrix_height(D) * sizeof(double));
+    lambdas_len = 0;
     printf("-----------------------------\n");
+    printf("b_m:\n");
+    printf("%lf\n", b_m);
     printf("D:\n");
     matrix_print(D);
     printf("u:\n");
     matrix_print(u);
-    printf("lambdas:\n");
+
     for (i = 0; i < matrix_height(D) - 1; i++) {
-        lambdas[i] = solve_secular_equation_common(D, u, b_m, i, eps);
-        printf("%lf ", lambdas[i]);
+        if (is_zero(matrix_get(u, i, 0))) {
+            lambda_types[lambdas_len] = LAMBDA_TYPE_DEFLATED_ZERO_U;
+            lambdas[lambdas_len] = matrix_get(D, i, i);
+        } else if (are_equal(matrix_get(D, i, i), matrix_get(D, i + 1, i + 1))) {
+            lambda_types[lambdas_len] = LAMBDA_TYPE_DEFLATED_EQ_D;
+            lambdas[lambdas_len] = matrix_get(D, i, i);
+        } else {
+            lambda_types[lambdas_len] = LAMBDA_TYPE_NORMAL;
+            lambdas[lambdas_len] = solve_secular_equation_common(D, u, b_m, i, eps);
+        }
+        lambdas_len++;
     }
-    if (b_m > 0.0) {
-        lambdas[matrix_height(D) - 1] = solve_secular_equation_d0_plus_inf(D, u, b_m, eps);
-        printf("(b_m > 0) %lf ", lambdas[matrix_height(D) - 1]);
+    if (is_zero(matrix_get(u, matrix_height(D) - 1, 0))) {
+        lambda_types[lambdas_len] = LAMBDA_TYPE_DEFLATED_ZERO_U;
+        lambdas[lambdas_len] = matrix_get(D, matrix_height(D) - 1, matrix_height(D) - 1);
     } else {
-        lambdas[matrix_height(D) - 1] = solve_secular_equation_minus_inf_dn(D, u, b_m, eps);
-        printf("(b_m < 0) %lf ", lambdas[matrix_height(D) - 1]);
+        if (b_m > 0.0) {
+            lambda_types[lambdas_len] = LAMBDA_TYPE_NORMAL;
+            lambdas[lambdas_len] = solve_secular_equation_d0_plus_inf(D, u, b_m, eps);
+        } else {
+            lambda_types[lambdas_len] = LAMBDA_TYPE_NORMAL;
+            lambdas[lambdas_len] = solve_secular_equation_minus_inf_dn(D, u, b_m, eps);
+        }
+    }
+    lambdas_len++;
+
+    printf("lambdas:\n");
+    for (i = 0; i < lambdas_len; i++) {
+        printf("lambda[%d] = %lf (type: %u); ", i, lambdas[i], lambda_types[i]);
     }
     printf("\n");
 
     printf("-----------------------------\n");
+
+    /* */
 
     /* Restore original matrix from T1. */
     matrix_set(mat, m - 1, m - 1, matrix_get(mat, m - 1, m - 1) + b_m);
