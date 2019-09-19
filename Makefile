@@ -5,7 +5,7 @@ OBJS_PREFIX=.objs/
 
 CC=gcc
 
-CFLAGS=-g -Wall -Wextra -std=c89 -O3
+CFLAGS=-g -Wall -Wextra -std=c89 -O3 -I$(SRC_PREFIX)macro/
 
 all: $(BIN_PREFIX)test
 

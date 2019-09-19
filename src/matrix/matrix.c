@@ -72,7 +72,7 @@ __inline__ double matrix_get(const matrix_type_t mat, unsigned h, unsigned w)
 void matrix_free(matrix_type_t mat)
 {
     unsigned i;
-    for (i = 0; i < mat->w; i++) {
+    for (i = 0; i < mat->h; i++) {
         free(mat->vals[i]);
     }
     free(mat->vals);

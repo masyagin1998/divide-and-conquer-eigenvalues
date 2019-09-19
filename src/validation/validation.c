@@ -1,4 +1,5 @@
 #include "validation.h"
+#include "macro.h"
 
 #include <math.h>
 
@@ -6,8 +7,6 @@ __inline__ int matrix_is_square(const matrix_type_t mat)
 {
     return (matrix_height(mat) == matrix_width(mat));
 }
-
-#define are_equal(v1, v2) ((fabs((v1) - (v2))) < eps)
 
 int matrix_is_symmetric(const matrix_type_t mat, double eps)
 {
@@ -27,8 +26,6 @@ int matrix_is_symmetric(const matrix_type_t mat, double eps)
 
     return 1;
 }
-
-#define is_zero(v) ((v) < eps)
 
 int matrix_is_tridiagonal(const matrix_type_t mat, double eps)
 {

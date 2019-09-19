@@ -1,4 +1,5 @@
 #include "secular_equation.h"
+#include "macro.h"
 
 #include <math.h>
 
@@ -97,8 +98,6 @@ static double calculate_c3(const matrix_type_t D, const matrix_type_t u, double 
     double c2_circum = calculate_c2_circum(D, u, lambda, ro, i);    
     return (1 + c1_circum + c2_circum);
 }
-
-#define is_zero(v) ((v) < eps)
 
 static int should_stop_iterations(const matrix_type_t D, const matrix_type_t u, double lambda, double ro, double eps)
 {

@@ -44,6 +44,8 @@ int main(int argc, char**argv)
         goto err1;
     }
 
+    printf("INPUT MATRIX:\n");
+    matrix_print(mat);
     matrix_divide_and_conquer(mat, EPS);
 
     matrix_free(mat);
