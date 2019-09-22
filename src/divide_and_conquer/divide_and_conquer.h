@@ -3,6 +3,6 @@
 
 #include "matrix.h"
 
-void matrix_divide_and_conquer(matrix_type_t mat, double eps);
+void matrix_divide_and_conquer(matrix_type_t mat, long double eps);
 
 #endif  /* DIVIDE_AND_CONQUER_H_INCLUDED */

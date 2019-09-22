@@ -4,7 +4,7 @@
 #include "validation.h"
 #include "divide_and_conquer.h"
 
-#define EPS 0.00001
+#define EPS 0.0000001
 
 int main(int argc, char**argv)
 {

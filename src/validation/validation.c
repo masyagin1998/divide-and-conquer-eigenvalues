@@ -8,7 +8,7 @@ __inline__ int matrix_is_square(const matrix_type_t mat)
     return (matrix_height(mat) == matrix_width(mat));
 }
 
-int matrix_is_symmetric(const matrix_type_t mat, double eps)
+int matrix_is_symmetric(const matrix_type_t mat, long double eps)
 {
     unsigned i, j;
     
@@ -27,7 +27,7 @@ int matrix_is_symmetric(const matrix_type_t mat, double eps)
     return 1;
 }
 
-int matrix_is_tridiagonal(const matrix_type_t mat, double eps)
+int matrix_is_tridiagonal(const matrix_type_t mat, long double eps)
 {
     unsigned i, j;
     
@@ -37,7 +37,7 @@ int matrix_is_tridiagonal(const matrix_type_t mat, double eps)
 
     for (i = 0; i < matrix_height(mat); i++) {
         for (j = 0; j < matrix_width(mat); j++) {
-            double cell = matrix_get(mat, i, j);
+            long double cell = matrix_get(mat, i, j);
             if ((i == j) || (i - 1 == j) || (i + 1 == j)) {
                 if (is_zero(cell)) {
                     return 0;

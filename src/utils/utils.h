@@ -6,7 +6,7 @@
 /*
   Format of matrix file:
   two positivie values in first string: height and width;
-  height string with width double values in every string;
+  height string with width long double values in every string;
  */
 
 void matrix_print(const matrix_type_t mat);

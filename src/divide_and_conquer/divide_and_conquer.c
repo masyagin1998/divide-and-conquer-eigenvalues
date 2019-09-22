@@ -25,18 +25,18 @@ struct LAMBDA
 {
     int              idx;
     enum LAMBDA_TYPE type;
-    double           lambda;
+    long double           lambda;
 };
 
 struct D_I_J
 {
     unsigned j;
-    double   d_i_j;
+    long double   d_i_j;
     unsigned k_d_i_j;
     unsigned l_j;
 };
 
-int exists_in_d_i_j(const struct D_I_J*d_i_j_s, unsigned d_i_j_s_len, double lambda, double eps)
+int exists_in_d_i_j(const struct D_I_J*d_i_j_s, unsigned d_i_j_s_len, long double lambda, long double eps)
 {
     unsigned i;
     
@@ -62,7 +62,7 @@ int is_i_equal_to_i_j(const struct D_I_J*d_i_j_s, unsigned d_i_j_s_len, unsigned
     return -1;
 }
 
-int is_d_i_equal_to_d_i_j(const struct D_I_J*d_i_j_s, unsigned d_i_j_s_len, double d_i, double eps)
+int is_d_i_equal_to_d_i_j(const struct D_I_J*d_i_j_s, unsigned d_i_j_s_len, long double d_i, long double eps)
 {
     unsigned k;
 
@@ -75,24 +75,24 @@ int is_d_i_equal_to_d_i_j(const struct D_I_J*d_i_j_s, unsigned d_i_j_s_len, doub
     return -1;
 }
 
-static double calculate_w_i_0(const matrix_type_t D, const struct LAMBDA*lambdas, unsigned i)
+static long double calculate_w_i_0(const matrix_type_t D, const struct LAMBDA*lambdas, unsigned i)
 {
     unsigned j;
     
-    double num = 1.0;
-    double denom = 1.0;
-    double res;
+    long double num = 1.0;
+    long double denom = 1.0;
+    long double res;
 
     for (j = 0; j < matrix_height(D); j++) {
-        printf("lambda: %lf; d: %lf\n", lambdas[j].lambda, matrix_get(D, i, i));
+        printf("lambda: %Lf; d: %Lf\n", lambdas[j].lambda, matrix_get(D, i, i));
         num *= (lambdas[j].lambda - matrix_get(D, i, i));
         if (j != i) {
-            printf("d_j: %lf, d_i: %lf\n", matrix_get(D, j, j), matrix_get(D, i, i));
+            printf("d_j: %Lf, d_i: %Lf\n", matrix_get(D, j, j), matrix_get(D, i, i));
             denom *= (matrix_get(D, j, j) - matrix_get(D, i, i));
         }
     }
 
-    printf("num: %lf; denom: %lf\n", num, denom);
+    printf("num: %Lf; denom: %Lf\n", num, denom);
 
     res = num / denom;
     if (res < 0) {
@@ -100,18 +100,18 @@ static double calculate_w_i_0(const matrix_type_t D, const struct LAMBDA*lambdas
     }
     res = sqrt(res);
 
-    printf("res: %lf\n", res);
+    printf("res: %Lf\n", res);
 
     return res;
 }
 
-static double calculate_w_i_1(const matrix_type_t D, const struct LAMBDA*lambdas, unsigned i, double k_d_i_j, double eps)
+static long double calculate_w_i_1(const matrix_type_t D, const struct LAMBDA*lambdas, unsigned i, long double k_d_i_j, long double eps)
 {
     unsigned j;
 
-    double num = 1.0;
-    double denom = 1.0;
-    double res;
+    long double num = 1.0;
+    long double denom = 1.0;
+    long double res;
 
     for (j = 0; j < matrix_height(D); j++) {
         if (!are_equal(lambdas[j].lambda, matrix_get(D, i, i))) {
@@ -145,7 +145,7 @@ static matrix_type_t matrix_from_eigs(const matrix_type_t*eigenvectors, unsigned
 
     for (i = 0; i < len; i++) {
         for (j = 0; j < len; j++) {
-            double cell = matrix_get(eigenvectors[i], j, 0);
+            long double cell = matrix_get(eigenvectors[i], j, 0);
             matrix_set(res, j, i, cell);
         }
     }
@@ -166,7 +166,7 @@ static matrix_type_t matrix_from_lambdas(const struct LAMBDA*lambdas, unsigned l
     }
 
     for (i = 0; i < len; i++) {
-        double cell = lambdas[i].lambda;
+        long double cell = lambdas[i].lambda;
         matrix_set(res, i, i, cell);
     }
 
@@ -176,12 +176,12 @@ static matrix_type_t matrix_from_lambdas(const struct LAMBDA*lambdas, unsigned l
     return NULL;    
 }
 
-static void matrix_divide_and_conquer_inner(matrix_type_t mat, matrix_type_t*Q, matrix_type_t*LAMBDA, double eps, unsigned step)
+static void matrix_divide_and_conquer_inner(matrix_type_t mat, matrix_type_t*Q, matrix_type_t*LAMBDA, long double eps, unsigned step)
 {    
     unsigned i, j;
     
     unsigned m;
-    double b_m;
+    long double b_m;
 
     matrix_type_t tmp;
 
@@ -221,7 +221,7 @@ static void matrix_divide_and_conquer_inner(matrix_type_t mat, matrix_type_t*Q, 
     matrix_type_t mat1 = matrix_create(m, m, 0.0);
     for (i = 0; i < m; i++) {
         for (j = 0; j < m; j++) {
-            double cell = matrix_get(mat, i, j);
+            long double cell = matrix_get(mat, i, j);
             matrix_set(mat1, i, j, cell);
         }
     }
@@ -231,7 +231,7 @@ static void matrix_divide_and_conquer_inner(matrix_type_t mat, matrix_type_t*Q, 
     matrix_type_t mat2 = matrix_create(matrix_height(mat) - m, matrix_width(mat) - m, 0.0);
     for (i = m; i < matrix_height(mat); i++) {
         for (j = m; j < matrix_width(mat); j++) {
-            double cell = matrix_get(mat, i, j);
+            long double cell = matrix_get(mat, i, j);
             matrix_set(mat2, i - m, j - m, cell);
         }
     }
@@ -243,7 +243,7 @@ static void matrix_divide_and_conquer_inner(matrix_type_t mat, matrix_type_t*Q, 
     printf("In:\n");
     matrix_print(mat);
     printf("B_m:\n");
-    printf("%lf\n", b_m);    
+    printf("%Lf\n", b_m);    
 #endif  /* DEBUG_STEPS */
 
     /* Calculate P, P_t and D. */
@@ -334,7 +334,7 @@ static void matrix_divide_and_conquer_inner(matrix_type_t mat, matrix_type_t*Q, 
             lambdas[lambdas_len].lambda = solve_secular_equation_d0_plus_inf(D, u, b_m, eps);
         }
 #ifdef DEBUG_STEPS
-        printf("(d0, +oo): d0 = %lf; lambda = %lf; type = %u;\n",
+        printf("(d0, +oo): d0 = %Lf; lambda = %Lf; type = %u;\n",
                matrix_get(D, 0, 0),
                lambdas[lambdas_len].lambda, lambdas[lambdas_len].type);
 #endif  /* DEBUG_STEPS */
@@ -354,7 +354,7 @@ static void matrix_divide_and_conquer_inner(matrix_type_t mat, matrix_type_t*Q, 
             lambdas[lambdas_len].lambda = solve_secular_equation_common(D, u, b_m, i, eps);
         }
 #ifdef DEBUG_STEPS
-        printf("(d%u, d%u): d%u = %lf; d%u = %lf; lambda = %lf; type = %u;\n",
+        printf("(d%u, d%u): d%u = %Lf; d%u = %Lf; lambda = %Lf; type = %u;\n",
                i + 1, i, i + 1, matrix_get(D, i + 1, i + 1), i, matrix_get(D, i, i),
                lambdas[lambdas_len].lambda, lambdas[lambdas_len].type);
 #endif  /* DEBUG_STEPS */
@@ -371,7 +371,7 @@ static void matrix_divide_and_conquer_inner(matrix_type_t mat, matrix_type_t*Q, 
             lambdas[lambdas_len].lambda = solve_secular_equation_minus_inf_dn(D, u, b_m, eps);
         }
 #ifdef DEBUG_STEPS
-        printf("(-oo, d_%u): d_%u = %lf; lambda = %lf; type = %u;\n",
+        printf("(-oo, d_%u): d_%u = %Lf; lambda = %Lf; type = %u;\n",
                matrix_height(D) - 1, matrix_height(D) - 1,                   
                matrix_get(D, matrix_height(D) - 1, matrix_height(D) - 1),
                lambdas[lambdas_len].lambda, lambdas[lambdas_len].type);
@@ -413,10 +413,10 @@ static void matrix_divide_and_conquer_inner(matrix_type_t mat, matrix_type_t*Q, 
             ((idx_d_i_j != -1) && (d_i_j_s[idx_d_i_j].l_j > d_i_j_s[idx_d_i_j].k_d_i_j - 1) && (d_i_j_s[idx_d_i_j].k_d_i_j - 1 > 0))) {
             matrix_set(w, i, 0, 0.0);
         } else if ((idx_i_j != -1) && (d_i_j_s[idx_i_j].l_j == 0) && (d_i_j_s[idx_i_j].k_d_i_j == 1)) {
-            double cell = calculate_w_i_0(D, lambdas, i);
+            long double cell = calculate_w_i_0(D, lambdas, i);
             matrix_set(w, i, 0, cell);
         } else if ((idx_d_i_j != -1) && (d_i_j_s[idx_d_i_j].l_j == d_i_j_s[idx_d_i_j].k_d_i_j - 1) && (d_i_j_s[idx_d_i_j].k_d_i_j - 1 > 0)) {
-            double cell = calculate_w_i_1(D, lambdas, i, d_i_j_s[idx_d_i_j].k_d_i_j, eps);
+            long double cell = calculate_w_i_1(D, lambdas, i, d_i_j_s[idx_d_i_j].k_d_i_j, eps);
             matrix_set(w, i, 0, cell);
         } else {
             printf("\nROR\n");
@@ -471,6 +471,11 @@ static void matrix_divide_and_conquer_inner(matrix_type_t mat, matrix_type_t*Q, 
 #endif  /* DEBUG_STEPS */        
         matrix_free(m);
         evs[i] = matrix_mul(m_inv, w);
+        long double len = vector_len(evs[i]);
+        for (j = 0; j < matrix_height(evs[i]); j++) {
+            long double cell = matrix_get(evs[i], j, 0) / len;
+            matrix_set(evs[i], j, 0, cell);
+        }
         matrix_free(m_inv);
 #ifdef DEBUG_STEPS
         printf("eigenvector:\n");
@@ -505,18 +510,18 @@ static void matrix_divide_and_conquer_inner(matrix_type_t mat, matrix_type_t*Q, 
     matrix_free(lambda2);
 }
 
-void matrix_divide_and_conquer(matrix_type_t mat, double eps)
+void matrix_divide_and_conquer(matrix_type_t mat, long double eps)
 {
     matrix_type_t Q;
     matrix_type_t lambda;
-    matrix_type_t Q_inv;
+    matrix_type_t Q_t;
     matrix_type_t res;
     matrix_type_t tmp;
 
     matrix_divide_and_conquer_inner(mat, &Q, &lambda, eps, 1);
-    Q_inv = matrix_inverse(Q);
+    Q_t = matrix_inverse(Q);
     tmp = matrix_mul(Q, lambda);
-    res = matrix_mul(tmp, Q_inv);
+    res = matrix_mul(tmp, Q_t);
     
     matrix_free(tmp);
 
@@ -526,14 +531,14 @@ void matrix_divide_and_conquer(matrix_type_t mat, double eps)
     matrix_print(Q);
     printf("LAMBDA:\n");
     matrix_print(lambda);
-    printf("Q^(-1):\n");
-    matrix_print(Q_inv);
+    printf("Q_t:\n");
+    matrix_print(Q_t);
     printf("RES:\n");
     matrix_print(res);
 #endif  /* DEBUG_STEPS */
 
     matrix_free(Q);
     matrix_free(lambda);
-    matrix_free(Q_inv);
+    matrix_free(Q_t);
     matrix_free(res);
 }

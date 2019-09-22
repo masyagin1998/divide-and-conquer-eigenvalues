@@ -21,11 +21,11 @@ void matrix_cofactor(const matrix_type_t mat, matrix_type_t tmp, unsigned p, uns
     }
 }
 
-double matrix_determinant(const matrix_type_t mat)
+long double matrix_determinant(const matrix_type_t mat)
 {
     unsigned i;
     
-    double det;
+    long double det;
     matrix_type_t tmp;
     int sign;
 
@@ -74,7 +74,7 @@ matrix_type_t matrix_adjoint(const matrix_type_t mat)
 
     for (i = 0; i < matrix_height(mat); i++) {
         for (j = 0; j < matrix_width(mat); j++) {
-            double cell;
+            long double cell;
             
             matrix_cofactor(mat, tmp, i, j);
 
@@ -100,7 +100,7 @@ matrix_type_t matrix_inverse(const matrix_type_t mat)
     unsigned i, j;
     matrix_type_t res;
     matrix_type_t adj;
-    double det;
+    long double det;
 
     res = matrix_create(matrix_height(mat), matrix_width(mat), 0.0);
     if (res == NULL) {
@@ -116,7 +116,7 @@ matrix_type_t matrix_inverse(const matrix_type_t mat)
 
     for (i = 0; i < matrix_height(res); i++) {
         for (j = 0; j < matrix_width(res); j++) {
-            double cell = matrix_get(adj, i, j) / det;
+            long double cell = matrix_get(adj, i, j) / det;
             matrix_set(res, i, j, cell);
         }
     }

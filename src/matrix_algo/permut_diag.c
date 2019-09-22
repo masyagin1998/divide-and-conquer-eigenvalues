@@ -7,10 +7,10 @@ matrix_type_t matrix_diag_permut(const matrix_type_t mat)
     unsigned i, j;
     
     matrix_type_t res;
-    double*arr;
+    long double*arr;
     unsigned*idxs;
     
-    arr = (double*) malloc(matrix_height(mat) * sizeof(double));
+    arr = (long double*) malloc(matrix_height(mat) * sizeof(long double));
     if (arr == NULL) {
         goto err0;
     }

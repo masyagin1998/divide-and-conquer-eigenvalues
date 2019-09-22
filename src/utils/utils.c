@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 
-#define MAT_VAL "%5.4f"
+#define MAT_VAL "%5.6Lf"
 
 #define MAT_VAL_LEN 7
 
@@ -41,8 +41,8 @@ matrix_type_t read_matrix_from_file(const char*fname)
 
     for (i = 0; i < h; i++) {
         for (j = 0; j < w; j++) {
-            double cell;
-            if (fscanf(f, "%lf", &cell) != 1) {
+            long double cell;
+            if (fscanf(f, "%Lf", &cell) != 1) {
                 goto err2;
             }
             matrix_set(mat, i, j, cell);
@@ -78,9 +78,9 @@ int save_matrix_to_file(const matrix_type_t mat, const char*fname)
 
     for (i = 0; i < matrix_height(mat); i++) {
         for (j = 0; j < matrix_width(mat) - 1; j++) {
-            fprintf(f, "%lf ", matrix_get(mat, i, j));
+            fprintf(f, "%Lf ", matrix_get(mat, i, j));
         }
-        fprintf(f, "%lf\n", matrix_get(mat, i, matrix_width(mat) - 1));
+        fprintf(f, "%Lf\n", matrix_get(mat, i, matrix_width(mat) - 1));
     }
 
     return 0;

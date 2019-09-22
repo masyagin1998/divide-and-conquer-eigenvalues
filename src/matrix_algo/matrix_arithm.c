@@ -13,7 +13,7 @@ matrix_type_t matrix_plus(const matrix_type_t a, const matrix_type_t b)
 
     for (i = 0; i < matrix_height(res); i++) {
         for (j = 0; j < matrix_width(res); j++) {
-            double cell = matrix_get(a, i, j) + matrix_get(b, i, j);
+            long double cell = matrix_get(a, i, j) + matrix_get(b, i, j);
             matrix_set(res, i, j, cell);
         }
     }
@@ -35,7 +35,7 @@ matrix_type_t matrix_minus(const matrix_type_t a, const matrix_type_t b)
 
     for (i = 0; i < matrix_height(res); i++) {
         for (j = 0; j < matrix_width(res); j++) {
-            double cell = matrix_get(a, i, j) - matrix_get(b, i, j);
+            long double cell = matrix_get(a, i, j) - matrix_get(b, i, j);
             matrix_set(res, i, j, cell);
         }
     }
@@ -57,7 +57,7 @@ matrix_type_t matrix_mul(const matrix_type_t a, const matrix_type_t b)
     
     for (i = 0; i < matrix_height(res); i++) {
         for (j = 0; j < matrix_width(res); j++) {
-            double cell = 0.0;
+            long double cell = 0.0;
             for (k = 0; k < matrix_width(a); k++) {
                 cell += matrix_get(a, i, k) * matrix_get(b, k, j);
             }

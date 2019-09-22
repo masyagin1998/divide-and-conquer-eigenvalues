@@ -1,7 +1,7 @@
 #include "matrix_algo.h"
 #include <stddef.h>
 
-matrix_type_t matrix_diag(unsigned h_w, double def_val)
+matrix_type_t matrix_diag(unsigned h_w, long double def_val)
 {
     unsigned i;
     

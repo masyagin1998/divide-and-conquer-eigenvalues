@@ -4,12 +4,12 @@
 
 struct MATRIX
 {
-    double**vals;
+    long double**vals;
     unsigned w;    
     unsigned h;
 };
 
-matrix_type_t matrix_create(unsigned h, unsigned w, double def_val)
+matrix_type_t matrix_create(unsigned h, unsigned w, long double def_val)
 {
     unsigned i, j;
     
@@ -20,12 +20,12 @@ matrix_type_t matrix_create(unsigned h, unsigned w, double def_val)
     mat->h = h;
     mat->w = w;
 
-    mat->vals = (double**) malloc(mat->h * sizeof(double*));
+    mat->vals = (long double**) malloc(mat->h * sizeof(long double*));
     if (mat->vals == NULL) {
         goto err1;
     }
     for (i = 0; i < mat->h; i++) {
-        mat->vals[i] = (double*) malloc(mat->w * sizeof(double));
+        mat->vals[i] = (long double*) malloc(mat->w * sizeof(long double));
         if (mat->vals[i] == NULL) {
             goto err2;
         }
@@ -59,12 +59,12 @@ __inline__ unsigned  matrix_width(const matrix_type_t mat)
     return mat->w;    
 }
 
-__inline__ void matrix_set(matrix_type_t mat, unsigned h, unsigned w, double val)
+__inline__ void matrix_set(matrix_type_t mat, unsigned h, unsigned w, long double val)
 {
     mat->vals[h][w] = val;
 }
 
-__inline__ double matrix_get(const matrix_type_t mat, unsigned h, unsigned w)
+__inline__ long double matrix_get(const matrix_type_t mat, unsigned h, unsigned w)
 {
     return mat->vals[h][w];
 }
