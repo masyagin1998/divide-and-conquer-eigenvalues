@@ -60,6 +60,11 @@ matrix_type_t matrix_adjoint(const matrix_type_t mat)
         goto err0;
     }
 
+    if (matrix_height(res) == 1) {
+        matrix_set(res, 0, 0, matrix_get(mat, 0, 0));
+        return res;
+    }
+
     tmp = matrix_create(matrix_height(mat) - 1, matrix_width(mat) - 1, 0.0);
     if (tmp == NULL) {
         goto err1;
