@@ -99,6 +99,8 @@ static double calculate_c3(const matrix_type_t D, const matrix_type_t u, double 
     return (1 + c1_circum + c2_circum);
 }
 
+#include <stdio.h>
+
 static int should_stop_iterations(const matrix_type_t D, const matrix_type_t u, double lambda, double ro, double eps)
 {
     unsigned k;
@@ -129,10 +131,10 @@ static double solve_secular_equation_d0_plus_inf_iter(const matrix_type_t D, con
     double lambda_1 = matrix_get(D, i, i) + (c2 / c1);
 
     if (lambda_1 > matrix_get(D, i, i)) {
-        if (should_stop_iterations(D, u, lambda, ro, eps)) {
+        if (should_stop_iterations(D, u, lambda_1, ro, eps)) {
             return lambda_1;
         }
-        return solve_secular_equation_d0_plus_inf_iter(D, u, lambda, ro, eps);
+        return solve_secular_equation_d0_plus_inf_iter(D, u, lambda_1, ro, eps);
     }
 
     printf("lel\n");
@@ -141,8 +143,17 @@ static double solve_secular_equation_d0_plus_inf_iter(const matrix_type_t D, con
 
 double solve_secular_equation_d0_plus_inf(const matrix_type_t D, const matrix_type_t u, double ro, double eps)
 {
-    double lambda_start = matrix_get(D, 0, 0) + 1.0;
-    return solve_secular_equation_d0_plus_inf_iter(D, u, lambda_start, ro, eps);
+    double lambda = matrix_get(D, 0, 0);
+
+    while (1) {
+        if (should_stop_iterations(D, u, lambda, ro, eps)) {
+            return lambda;
+        }
+
+        lambda += eps;
+    }
+    
+    /* return solve_secular_equation_d0_plus_inf_iter(D, u, lambda_start, ro, eps); */
 }
 
 static double solve_secular_equation_common_iter(const matrix_type_t D, const matrix_type_t u, double lambda, double ro, unsigned i, double eps)
@@ -163,12 +174,12 @@ static double solve_secular_equation_common_iter(const matrix_type_t D, const ma
     double lambda_2 = (-b - sqrt(disc)) / (2 * a);
 
     if ((lambda_1 > d_i_1) && (lambda_1 < d_i)) {
-        if (should_stop_iterations(D, u, lambda, ro, eps)) {
+        if (should_stop_iterations(D, u, lambda_1, ro, eps)) {
             return lambda_1;
         }
         return solve_secular_equation_common_iter(D, u, lambda_1, ro, i, eps);
     } else if ((lambda_2 > d_i_1) && (lambda_2 < d_i)) {
-        if (should_stop_iterations(D, u, lambda, ro, eps)) {
+        if (should_stop_iterations(D, u, lambda_2, ro, eps)) {
             return lambda_2;
         }
         return solve_secular_equation_common_iter(D, u, lambda_2, ro, i, eps);
@@ -206,6 +217,13 @@ static double solve_secular_equation_minus_inf_dn_iter(const matrix_type_t D, co
 
 double solve_secular_equation_minus_inf_dn(const matrix_type_t D, const matrix_type_t u, double ro, double eps)
 {
-    double lambda_start = matrix_get(D, matrix_height(D) - 1, matrix_height(D) - 1) - 1.0;
-    return solve_secular_equation_minus_inf_dn_iter(D, u, lambda_start, ro, eps);
+    double lambda = matrix_get(D, matrix_height(D) - 1, matrix_height(D) - 1);
+
+    while (1) {
+        if (should_stop_iterations(D, u, lambda, ro, eps)) {
+            return lambda;
+        }
+
+        lambda -= eps;
+    }
 }

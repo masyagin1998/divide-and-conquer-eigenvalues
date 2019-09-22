@@ -2,25 +2,20 @@
 
 #include <stdio.h>
 
-#define MAT_VAL "%5.2f"
+#define MAT_VAL "%5.4f"
 
 #define MAT_VAL_LEN 7
 
-void matrix_print_part(const matrix_type_t mat, unsigned h_min, unsigned w_min, unsigned h_max, unsigned w_max)
-{
-    unsigned i, j;
-    for (i = h_min; i < h_max; i++) {
-        printf("|");
-        for (j = w_min; j < w_max - 1; j++) {
-            printf(MAT_VAL" ", matrix_get(mat, i, j));
-        }
-        printf(MAT_VAL"|\n", matrix_get(mat, i, w_max - 1));
-    }    
-}
-
 void matrix_print(const matrix_type_t mat)
 {
-    matrix_print_part(mat, 0, 0, matrix_height(mat), matrix_width(mat));
+    unsigned i, j;
+    for (i = 0; i < matrix_height(mat); i++) {
+        printf("|");
+        for (j = 0; j < matrix_width(mat) - 1; j++) {
+            printf(MAT_VAL" ", matrix_get(mat, i, j));
+        }
+        printf(MAT_VAL"|\n", matrix_get(mat, i, matrix_width(mat) - 1));
+    }
 }
 
 matrix_type_t read_matrix_from_file(const char*fname)

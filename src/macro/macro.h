@@ -3,6 +3,6 @@
 
 #define are_equal(v1, v2) ((fabs((v1) - (v2))) < eps)
 
-#define is_zero(v) ((v) < eps)
+#define is_zero(v) (fabs((v)) < eps)
 
 #endif  /* MACRO_H_INCLUDED */
