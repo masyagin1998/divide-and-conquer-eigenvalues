@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 
-#define MAT_VAL "%5.6Lf"
+#define MAT_VAL "%5.4Lf"
 
 #define MAT_VAL_LEN 7
 
@@ -12,7 +12,7 @@ void matrix_print(const matrix_type_t mat)
     for (i = 0; i < matrix_height(mat); i++) {
         printf("|");
         for (j = 0; j < matrix_width(mat) - 1; j++) {
-            printf(MAT_VAL" ", matrix_get(mat, i, j));
+            printf(MAT_VAL" ", matrix_get(mat, i, j) + 0.0);
         }
         printf(MAT_VAL"|\n", matrix_get(mat, i, matrix_width(mat) - 1));
     }

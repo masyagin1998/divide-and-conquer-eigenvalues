@@ -95,7 +95,7 @@ static long double calculate_w_i_0(const matrix_type_t D, const struct LAMBDA*la
     printf("num: %Lf; denom: %Lf\n", num, denom);
 
     res = num / denom;
-    if (res < 0) {
+    if (res < 0.0) {
         res = -res;
     }
     res = sqrt(res);
@@ -458,7 +458,7 @@ static void matrix_divide_and_conquer_inner(matrix_type_t mat, matrix_type_t*Q, 
         matrix_type_t m_inv;
         
         a_i_E = matrix_diag(matrix_height(D), lambdas[i].lambda);
-        m     = matrix_minus(D, a_i_E);
+        m     = matrix_minus(a_i_E, D);
 #ifdef DEBUG_STEPS
         printf("D - a_i * E:\n");
         matrix_print(m);
@@ -492,6 +492,15 @@ static void matrix_divide_and_conquer_inner(matrix_type_t mat, matrix_type_t*Q, 
     }
 
     (*LAMBDA) = matrix_from_lambdas(lambdas, lambdas_len);
+
+#ifdef DEBUG_STEPS
+        printf("eigenvectors:\n");
+        matrix_print(eigs);
+        printf("lambdas:\n");
+        matrix_print(*LAMBDA);
+        printf("eigs * lambdas * eigs_t\n");
+        matrix_print(matrix_mul(matrix_mul(eigs, *LAMBDA), matrix_transpose(eigs)));
+#endif  /* DEBUG_STEPS */    
     
     tmp = matrix_mul((*Q), eigs);
     matrix_free(*Q);

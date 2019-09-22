@@ -117,7 +117,7 @@ matrix_type_t matrix_inverse(const matrix_type_t mat)
     for (i = 0; i < matrix_height(res); i++) {
         for (j = 0; j < matrix_width(res); j++) {
             long double cell = matrix_get(adj, i, j) / det;
-            matrix_set(res, i, j, cell);
+            matrix_set(res, i, j, cell + 0.0);
         }
     }
 
