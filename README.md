@@ -4,7 +4,7 @@ This is realization of divide-and-conquer eigenvalues algorithm for symmetric tr
 
 ### Tech
 
-Algorithm is coded in pure C89.
+Algorithm is coded in pure C11.
 It is single-threaded, but can be simply parallelized, giving recursive tasks for T1 and T2 matricies to thread-pool.
 
 ### Installation

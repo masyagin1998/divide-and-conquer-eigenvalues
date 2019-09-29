@@ -16,8 +16,8 @@ int matrix_is_symmetric(const matrix_type_t mat, long double eps)
         return 0;
     }
 
-    for (i = 0; i < matrix_height(mat); i++) {
-        for (j = 0; j < (i + 1); j++) {
+    for (i = 1; i <= matrix_height(mat); i++) {
+        for (j = 1; j <= (i + 1); j++) {
             if (!are_equal(matrix_get(mat, i, j), matrix_get(mat, j, i))) {
                 return 0;
             }
@@ -35,8 +35,8 @@ int matrix_is_tridiagonal(const matrix_type_t mat, long double eps)
         return 0;
     }
 
-    for (i = 0; i < matrix_height(mat); i++) {
-        for (j = 0; j < matrix_width(mat); j++) {
+    for (i = 1; i <= matrix_height(mat); i++) {
+        for (j = 1; j <= matrix_width(mat); j++) {
             long double cell = matrix_get(mat, i, j);
             if ((i == j) || (i - 1 == j) || (i + 1 == j)) {
                 if (is_zero(cell)) {

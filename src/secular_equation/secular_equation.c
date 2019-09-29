@@ -1,229 +1,99 @@
 #include "secular_equation.h"
-#include "macro.h"
 
 #include <math.h>
 
-static long double calculate_psi1(const matrix_type_t D, const matrix_type_t u, long double lambda, long double ro, unsigned i)
-{
-    unsigned k;
-    
-    long double res = 0.0;
-
-    for (k = 0; k <= i; k++) {
-        res += ((matrix_get(u, k, 0) * matrix_get(u, k, 0)) / (matrix_get(D, k, k) - lambda));
-    }
-
-    res *= ro;
-
-    return res;
-}
-
-static long double calculate_psi1_der(const matrix_type_t D, const matrix_type_t u, long double lambda, long double ro, unsigned i)
+static long double calculate_c1(matrix_type_t D, matrix_type_t v, unsigned i, long double lambda_init)
 {
     unsigned k;
 
     long double res = 0.0;
 
-    for (k = 0; k <= i; k++) {
-        res += ((matrix_get(u, k, 0) * matrix_get(u, k, 0)) / ((matrix_get(D, k, k) - lambda) * (matrix_get(D, k, k) - lambda)));
+    for (k = 1; k <= i; k++) {
+        res += ((matrix_get(v, 1, k) * matrix_get(v, 1, k)) / ((matrix_get(D, k, k) - lambda_init) * (matrix_get(D, k, k) - lambda_init)));
     }
 
-    res *= ro;
+    res *= ((matrix_get(D, i, i) - lambda_init) * (matrix_get(D, i, i) - lambda_init));
 
     return res;
 }
 
-static long double calculate_psi2(const matrix_type_t D, const matrix_type_t u, long double lambda, long double ro, unsigned i)
-{
-    unsigned k;
-    
-    long double res = 0.0;
-
-    for (k = i + 1; k < matrix_height(u); k++) {
-        res += ((matrix_get(u, k, 0) * matrix_get(u, k, 0)) / (matrix_get(D, k, k) - lambda));
-    }
-
-    res *= ro;
-
-    return res;
-}
-
-static long double calculate_psi2_der(const matrix_type_t D, const matrix_type_t u, long double lambda, long double ro, unsigned i)
+static long double calculate_c1_hat(matrix_type_t D, matrix_type_t v, unsigned i, long double lambda_init)
 {
     unsigned k;
 
     long double res = 0.0;
 
-    for (k = i + 1; k < matrix_height(u); k++) {
-        res += ((matrix_get(u, k, 0) * matrix_get(u, k, 0)) / ((matrix_get(D, k, k) - lambda) * (matrix_get(D, k, k) - lambda)));
-    }
-
-    res *= ro;
-
     return res;
 }
 
-static long double calculate_c1(const matrix_type_t D, const matrix_type_t u, long double lambda, long double ro, unsigned i)
-{
-    long double psi1_der = calculate_psi1_der(D, u, lambda, ro, i);
-    long double res = psi1_der * ((matrix_get(D, i, i) - lambda) * (matrix_get(D, i, i) - lambda));
-    return res;
-}
-
-static long double calculate_c1_circum(const matrix_type_t D, const matrix_type_t u, long double lambda, long double ro, unsigned i)
-{
-    long double psi1_der = calculate_psi1_der(D, u, lambda, ro, i);
-    long double psi1 = calculate_psi1(D, u, lambda, ro, i);
-    long double res = psi1 - psi1_der * (matrix_get(D, i, i) - lambda);
-    return res;
-}
-
-static long double calculate_c2(const matrix_type_t D, const matrix_type_t u, long double lambda, long double ro, unsigned i)
-{
-    long double psi2_der = calculate_psi2_der(D, u, lambda, ro, i);
-    long double res = psi2_der * ((matrix_get(D, i + 1, i + 1) - lambda) * (matrix_get(D, i + 1, i + 1) - lambda));
-    return res;
-}
-
-static long double calculate_c2_circum(const matrix_type_t D, const matrix_type_t u, long double lambda, long double ro, unsigned i)
-{
-    long double psi2_der = calculate_psi2_der(D, u, lambda, ro, i);
-    long double psi2 = calculate_psi2(D, u, lambda, ro, i);
-    long double res = psi2 - psi2_der * (matrix_get(D, i + 1, i + 1) - lambda);
-    return res;
-}
-
-static long double calculate_c3(const matrix_type_t D, const matrix_type_t u, long double lambda, long double ro, unsigned i) {
-    long double c1_circum = calculate_c1_circum(D, u, lambda, ro, i);
-    long double c2_circum = calculate_c2_circum(D, u, lambda, ro, i);    
-    return (1 + c1_circum + c2_circum);
-}
-
-#include <stdio.h>
-
-static int should_stop_iterations(const matrix_type_t D, const matrix_type_t u, long double lambda, long double ro, long double eps)
+static long double calculate_c2(matrix_type_t D, matrix_type_t v, unsigned i, long double lambda_init)
 {
     unsigned k;
-    
+    unsigned n = matrix_height(D);
+
     long double res = 0.0;
 
-    for (k = 0; k < matrix_height(u); k++) {
-        res += ((matrix_get(u, k, 0) * matrix_get(u, k, 0)) / (matrix_get(D, k, k) - lambda));
+    for (k = i + 1; k <= n; k++) {
+        res += ((matrix_get(v, 1, k) * matrix_get(v, 1, k)) / ((matrix_get(D, k, k) - lambda_init) * (matrix_get(D, k, k) - lambda_init)));
     }
 
-    res *= ro;
+    res *= ((matrix_get(D, i + 1, i + 1) - lambda_init) * (matrix_get(D, i + 1, i + 1) - lambda_init));
 
-    res += 1.0;
-
-    return is_zero(res);
+    return res;
 }
 
-#include <stdio.h>
-#include <stdlib.h>
-
-static long double solve_secular_equation_d0_plus_inf_iter(const matrix_type_t D, const matrix_type_t u, long double lambda, long double ro, long double eps)
+static long double calculate_c2_hat(matrix_type_t D, matrix_type_t v, unsigned i, long double lambda_init)
 {
-    unsigned i = 0;
-    
-    long double c1 = calculate_c1(D, u, lambda, ro, i);
-    long double c2 = calculate_c2(D, u, lambda, ro, i);
+    unsigned k;
 
-    long double lambda_1 = matrix_get(D, i, i) + (c2 / c1);
+    long double res = 0.0;
 
-    if (lambda_1 > matrix_get(D, i, i)) {
-        if (should_stop_iterations(D, u, lambda_1, ro, eps)) {
-            return lambda_1;
+    return res;
+}
+
+static long double calculate_c3(long double c1_hat, long double c2_hat, long double rho)
+{
+    return 1 / rho + c1_hat + c2_hat;
+}
+
+static long double calculate_func(matrix_type_t D, matrix_type_t v, unsigned i, long double lambda_init)
+{
+    unsigned k;
+
+    long double res = 0.0;
+
+    return res;
+}
+
+long double solve_secular_equation(long double rho, matrix_type_t D, matrix_type_t v, unsigned i, long double lambda_init, unsigned n, long double eps)
+{
+    long double error = 1.0;
+    unsigned iter = 1;
+
+    while (error > eps) {
+        long double c1 = calculate_c1(D, v, i, lambda_init);
+        long double c1_hat = calculate_c1_hat(D, v, i, lambda_init);
+        if (i == n) {
+            lambda_init = (c1 * rho + c1_hat * rho * matrix_get(D, n, n) + matrix_get(D, n, n)) / (1 + rho * c1_hat);
+            error = fabsl(1 / rho + calculate_func(D, v, i, lambda_init));
+        } else {
+            long double c2 = calculate_c2(D, v, i, lambda_init);
+            long double c2_hat = calculate_c2_hat(D, v, i, lambda_init);
+            long double c3 = calculate_c3(c1_hat, c2_hat, rho);
+            long double p = -(c1 + c2 + c3 * matrix_get(D, i + 1, i + 1) + c3 * matrix_get(D, i, i)) / c3;
+            long double q = (c1 * matrix_get(D, i + 1, i + 1) + c2 * matrix_get(D, i, i) + c3 * matrix_get(D, i, i) * matrix_get(D, i + 1, i + 1)) / c3;
+            long double root1 = -p / 2.0 + sqrtl(p * p / 4 - q);
+            long double root2 = -p / 2.0 - sqrtl(p * p / 4 - q);
+            if ((matrix_get(D, i, i) <= root1) && (root1 <= matrix_get(D, i + 1, i + 1))) {
+                lambda_init = root1;
+            } else {
+                lambda_init = root2;
+            }
+
+            error = fabsl(1 / rho /* + todo. */ );
         }
-        return solve_secular_equation_d0_plus_inf_iter(D, u, lambda_1, ro, eps);
+        iter++;
     }
 
-    printf("lel\n");
-    exit(1);
-}
-
-long double solve_secular_equation_d0_plus_inf(const matrix_type_t D, const matrix_type_t u, long double ro, long double eps)
-{
-    long double lambda = matrix_get(D, 0, 0);
-
-    while (1) {
-        if (should_stop_iterations(D, u, lambda, ro, eps)) {
-            return lambda;
-        }
-
-        lambda += eps;
-    }
-    
-    /* return solve_secular_equation_d0_plus_inf_iter(D, u, lambda_start, ro, eps); */
-}
-
-static long double solve_secular_equation_common_iter(const matrix_type_t D, const matrix_type_t u, long double lambda, long double ro, unsigned i, long double eps)
-{
-    long double c1 = calculate_c1(D, u, lambda, ro, i);
-    long double c2 = calculate_c2(D, u, lambda, ro, i);
-    long double c3 = calculate_c3(D, u, lambda, ro, i);
-    long double d_i = matrix_get(D, i, i);
-    long double d_i_1 = matrix_get(D, i + 1, i + 1);
-
-    long double a = c3;
-    long double b = -(c1 + c2 + c3 * (d_i + d_i_1));
-    long double c = c1 * d_i_1 + c2 * d_i + c3 * d_i * d_i_1;
-
-    long double disc = b * b - 4 * a * c;
-
-    long double lambda_1 = (-b + sqrt(disc)) / (2 * a);
-    long double lambda_2 = (-b - sqrt(disc)) / (2 * a);
-
-    if ((lambda_1 > d_i_1) && (lambda_1 < d_i)) {
-        if (should_stop_iterations(D, u, lambda_1, ro, eps)) {
-            return lambda_1;
-        }
-        return solve_secular_equation_common_iter(D, u, lambda_1, ro, i, eps);
-    } else if ((lambda_2 > d_i_1) && (lambda_2 < d_i)) {
-        if (should_stop_iterations(D, u, lambda_2, ro, eps)) {
-            return lambda_2;
-        }
-        return solve_secular_equation_common_iter(D, u, lambda_2, ro, i, eps);
-    }
-
-    printf("kek\n");
-    exit(1);
-}
-
-long double solve_secular_equation_common(const matrix_type_t D, const matrix_type_t u, long double ro, unsigned i, long double eps)
-{
-    long double lambda_start = lambda_start = (matrix_get(D, i, i) + matrix_get(D, i + 1, i + 1)) / 2.0;
-    return solve_secular_equation_common_iter(D, u, lambda_start, ro, i, eps);
-}
-
-static long double solve_secular_equation_minus_inf_dn_iter(const matrix_type_t D, const matrix_type_t u, long double lambda, long double ro, long double eps)
-{
-    unsigned i = matrix_height(D) - 1;
-    
-    long double c1 = calculate_c1(D, u, lambda, ro, i);
-    long double c2 = calculate_c2(D, u, lambda, ro, i);
-
-    long double lambda_1 = matrix_get(D, i, i) + (c2 / c1);
-
-    if (lambda_1 < matrix_get(D, i, i)) {
-        if (should_stop_iterations(D, u, lambda, ro, eps)) {
-            return lambda_1;
-        }
-        return solve_secular_equation_minus_inf_dn_iter(D, u, lambda, ro, eps);
-    }
-
-    printf("plel\n");
-    exit(1);
-}
-
-long double solve_secular_equation_minus_inf_dn(const matrix_type_t D, const matrix_type_t u, long double ro, long double eps)
-{
-    long double lambda = matrix_get(D, matrix_height(D) - 1, matrix_height(D) - 1);
-
-    while (1) {
-        if (should_stop_iterations(D, u, lambda, ro, eps)) {
-            return lambda;
-        }
-
-        lambda -= eps;
-    }
+    return lambda_init;
 }
