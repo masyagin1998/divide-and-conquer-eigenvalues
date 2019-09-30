@@ -73,7 +73,7 @@ int deflate(matrix_type_t*D, matrix_type_t*v, matrix_type_t*v_prime, matrix_type
 {
     unsigned n;
     unsigned i, j;
-    matrix_type_t tmp;
+    matrix_type_t tmp1, tmp2;
     unsigned*index_deflation;
     unsigned index_deflation_len;
     long double*v_prime_arr;
@@ -103,10 +103,10 @@ int deflate(matrix_type_t*D, matrix_type_t*v, matrix_type_t*v_prime, matrix_type
             matrix_set(G_tmp, j + 1, j + 1, c);
             printf("G_tmp:\n");
             matrix_print(G_tmp);
-            tmp = matrix_mul(G_tmp, (*G));
+            tmp1 = matrix_mul(G_tmp, (*G));
             matrix_free(G_tmp);
             matrix_free((*G));
-            (*G) = tmp;
+            (*G) = tmp1;
         }
     }
     printf("G:\n");
@@ -116,10 +116,11 @@ int deflate(matrix_type_t*D, matrix_type_t*v, matrix_type_t*v_prime, matrix_type
     index_deflation = (unsigned*) malloc(n * sizeof(unsigned));
     index_deflation_len = 0;
 
-    tmp = matrix_transpose((*G));
-    tmp = matrix_mul(tmp, (*v));
+    tmp1 = matrix_transpose((*G));
+    tmp2 = matrix_mul(tmp1, (*v));
+    matrix_free(tmp1);
     matrix_free((*v));
-    (*v) = tmp;
+    (*v) = tmp2;
 
 #ifdef DEFLATION_DEBUG
     printf("G:\n");

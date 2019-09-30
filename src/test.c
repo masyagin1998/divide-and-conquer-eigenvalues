@@ -5,7 +5,7 @@
 
 #include <stdio.h>
 
-#define EPS 0.0000001
+#define EPS 0.00000000001
 
 int main(int argc, char**argv)
 {
@@ -71,6 +71,7 @@ int main(int argc, char**argv)
     matrix_free(Q);
     matrix_free(L);
     matrix_free(Q_t);
+    matrix_free(T);
 
     return 0;
  err1:

@@ -57,7 +57,7 @@ int matrix_divide_and_conquer(const matrix_type_t T, matrix_type_t*Q, matrix_typ
     matrix_type_t D;
     int sign;
     matrix_type_t v;
-    matrix_type_t ind;
+    matrix_type_t P, P1;
     matrix_type_t tmp1, tmp2;
     matrix_type_t v_prime;
     matrix_type_t eigenvalues, eigenvectors;
@@ -67,7 +67,6 @@ int matrix_divide_and_conquer(const matrix_type_t T, matrix_type_t*Q, matrix_typ
     matrix_type_t v_hat;
     unsigned k;
     unsigned jj;
-    matrix_type_t P, P1;
     
     assert(matrix_height(T) == matrix_width(T));
 
@@ -167,21 +166,21 @@ int matrix_divide_and_conquer(const matrix_type_t T, matrix_type_t*Q, matrix_typ
     printf("\n");
 #endif  /* DIVIDE_AND_CONQUER_DEBUG */
 
-    ind = matrix_diag_permut(D);
-    tmp1 = matrix_mul(ind, D);
-    tmp2 = matrix_transpose(ind);
+    P = matrix_diag_permut(D);
+    tmp1 = matrix_mul(P, D);
+    tmp2 = matrix_transpose(P);
     matrix_free(D);
     D = matrix_mul(tmp1, tmp2);
     matrix_free(tmp1);
     matrix_free(tmp2);
 
-    tmp1 = matrix_mul(ind, v);
+    tmp1 = matrix_mul(P, v);
     matrix_free(v);
     v = tmp1;
 
 #ifdef DIVIDE_AND_CONQUER_DEBUG
-    printf("IND:\n");
-    matrix_print(ind);
+    printf("P:\n");
+    matrix_print(P);
     printf("D new:\n");
     matrix_print(D);
     printf("v new:\n");
@@ -227,9 +226,11 @@ int matrix_divide_and_conquer(const matrix_type_t T, matrix_type_t*Q, matrix_typ
         } else {
             lambda_init = (matrix_get(D, i, i) + matrix_get(D, i + 1, i + 1)) / 2.0;
         }
-        cell = solve_secular_equation(rho, D, matrix_transpose(v_prime), i, lambda_init, n_deflated, eps);
+        cell = solve_secular_equation(rho, D, tmp1, i, lambda_init, n_deflated, eps);
         matrix_set(lambda, i, 1, cell);
     }
+
+    matrix_free(tmp1);
 
 #ifdef DIVIDE_AND_CONQUER_DEBUG
     printf("v_prime:\n");
@@ -327,6 +328,8 @@ int matrix_divide_and_conquer(const matrix_type_t T, matrix_type_t*Q, matrix_typ
         matrix_free(tmp2);
     }
 
+    matrix_free(v_hat);
+
     tmp1 = matrix_mul(G, eigenvectors);
     matrix_free(eigenvectors);
     eigenvectors = tmp1;
@@ -338,8 +341,6 @@ int matrix_divide_and_conquer(const matrix_type_t T, matrix_type_t*Q, matrix_typ
     matrix_print(eigenvalues);
 #endif  /* DIVIDE_AND_CONQUER_DEBUG */
 
-    P = ind;
-
     printf("P:\n");
     matrix_print(P);
     
@@ -347,14 +348,29 @@ int matrix_divide_and_conquer(const matrix_type_t T, matrix_type_t*Q, matrix_typ
     P1 = matrix_diag_permut(eigenvalues);
     printf("P1:\n");
     matrix_print(P1);
-    eigenvalues = matrix_mul(matrix_mul(P1, eigenvalues), matrix_transpose(P1));
+    tmp1 = matrix_mul(P1, eigenvalues);
+    matrix_free(eigenvalues);
+    tmp2 = matrix_transpose(P1);
+    eigenvalues = matrix_mul(tmp1, tmp2);
+    matrix_free(tmp1);
+    matrix_free(tmp2);
     printf("eigenvalues:\n");
     matrix_print(eigenvalues);
-    eigenvectors = matrix_mul(eigenvectors, P1);
+    tmp1 = matrix_mul(eigenvectors, P1);
+    matrix_free(eigenvectors);
+    eigenvectors = tmp1;
     printf("eigens kek:\n");
     matrix_print(eigenvectors);
-    eigenvalues = matrix_mul(matrix_mul(matrix_transpose(P), eigenvalues), P);
-    eigenvectors = matrix_mul(matrix_mul(matrix_transpose(P), eigenvectors), P);
+    tmp1 = matrix_transpose(P);
+    tmp2 = matrix_mul(tmp1, eigenvalues);
+    matrix_free(eigenvalues);
+    eigenvalues = matrix_mul(tmp2, P);
+    matrix_free(tmp2);
+    tmp2 = matrix_mul(tmp1, eigenvectors);
+    matrix_free(eigenvectors);
+    eigenvectors = matrix_mul(tmp2, P);
+    matrix_free(tmp2);
+    matrix_free(tmp1);
     (*L) = eigenvalues;
 
 
@@ -377,9 +393,14 @@ int matrix_divide_and_conquer(const matrix_type_t T, matrix_type_t*Q, matrix_typ
     matrix_free(L2);
 
     matrix_free(eigenvectors);
+    matrix_free(v);
     matrix_free(v_prime);
     matrix_free(lambda);
-    matrix_free(G);    
+    matrix_free(G);
+    matrix_free(D);
+
+    matrix_free(P);
+    matrix_free(P1);
     
     return 0;
 
