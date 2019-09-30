@@ -7,7 +7,7 @@
   secular_equation will print
   some debug info to stdout.
  */
-#define SECULAR_EQUATION_DEBUG
+/* #define SECULAR_EQUATION_DEBUG */
 
 #ifdef SECULAR_EQUATION_DEBUG
 #include <stdio.h>
@@ -97,7 +97,7 @@ long double solve_secular_equation(long double rho, const matrix_type_t D, const
     unsigned iter = 1;
 
 #ifdef SECULAR_EQUATION_DEBUG
-    printf("-----secular-equation-----\n");
+    printf("-----secular-equation-beg-----\n");
 #endif  /* SECULAR_EQUATION_DEBUG */
 
 #ifdef SECULAR_EQUATION_DEBUG
@@ -117,7 +117,11 @@ long double solve_secular_equation(long double rho, const matrix_type_t D, const
         long double c1 = calculate_c1(D, v, i, lambda_init);
         long double c1_hat = calculate_c1_hat(D, v, i, lambda_init);
         if (i == n) {
-            lambda_init = (c1 * rho + c1_hat * rho * matrix_get(D, n, n) + matrix_get(D, n, n)) / (1 + rho * c1_hat);
+            if ((1 + rho * c1_hat) != 0.0) {
+                lambda_init = (c1 * rho + c1_hat * rho * matrix_get(D, n, n) + matrix_get(D, n, n)) / (1 + rho * c1_hat);
+            } else {
+                lambda_init = (c1 * rho + c1_hat * rho * matrix_get(D, n, n) + matrix_get(D, n, n)) / (eps / 1000.0);
+            }
         } else {
             long double c2 = calculate_c2(D, v, i, lambda_init);
             long double c2_hat = calculate_c2_hat(D, v, i, lambda_init);
@@ -142,7 +146,7 @@ long double solve_secular_equation(long double rho, const matrix_type_t D, const
 #endif  /* SECULAR_EQUATION_DEBUG */
 
 #ifdef SECULAR_EQUATION_DEBUG
-    printf("-----secular-equation-----\n");
+    printf("-----secular-equation-end-----\n");
 #endif  /* SECULAR_EQUATION_DEBUG */
 
     return lambda_init;

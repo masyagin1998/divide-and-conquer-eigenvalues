@@ -57,16 +57,20 @@ matrix_type_t matrix_adjoint(const matrix_type_t mat)
     int sign;
 
     res = matrix_create(matrix_height(mat), matrix_width(mat));
-    matrix_set_def_val(res, 0.0);
     if (res == NULL) {
         goto err0;
     }
+    matrix_set_def_val(res, 0.0);
+    if (matrix_height(res) == 1) {
+        matrix_set(res, 1, 1, 1.0);
+        return res;
+    }
 
-    tmp = matrix_create(matrix_height(mat) - 1, matrix_width(mat) - 1);
-    matrix_set_def_val(tmp, 0.0);    
+    tmp = matrix_create(matrix_height(mat) - 1, matrix_width(mat) - 1);    
     if (tmp == NULL) {
         goto err1;
     }
+    matrix_set_def_val(tmp, 0.0);
 
     sign = 1;
 

@@ -111,3 +111,25 @@ int save_matrix_to_file(const matrix_type_t mat, const char*fname)
  err0:
     return r;
 }
+
+matrix_type_t matrix_copy(const matrix_type_t mat)
+{
+    unsigned i, j;
+    
+    matrix_type_t res = matrix_create(matrix_height(mat), matrix_width(mat));
+    if (res == NULL) {
+        goto err0;
+    }
+
+    for (i = 1; i <= matrix_height(mat); i++) {
+        for (j = 1; j <= matrix_width(mat); j++) {
+            long double cell = matrix_get(mat, i, j);
+            matrix_set(res, i, j, cell);
+        }
+    }
+
+    return res;
+
+ err0:
+    return NULL;
+}
