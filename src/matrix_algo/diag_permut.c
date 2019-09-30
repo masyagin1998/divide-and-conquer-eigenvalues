@@ -38,16 +38,16 @@ matrix_type_t matrix_diag_permut(const matrix_type_t mat)
 
     for (i = 1; i <= n; i++) {
         for (j = i + 1; j <= n; j++) {
-            if (arr[idxs[i]] > arr[idxs[j]]) {
-                unsigned tmp = idxs[i];
-                idxs[i] = idxs[j];
-                idxs[j] = tmp;
+            if (arr[idxs[i - 1]] > arr[idxs[j - 1]]) {
+                unsigned tmp = idxs[i - 1];
+                idxs[i - 1] = idxs[j - 1];
+                idxs[j - 1] = tmp;
             }
         }
     }
 
     for (i = 1; i <= matrix_height(res); i++) {
-        matrix_set(res, i, idxs[i - 1], 1.0);
+        matrix_set(res, i, idxs[i - 1] + 1, 1.0);
     }
 
     free(arr);

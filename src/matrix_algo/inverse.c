@@ -1,22 +1,18 @@
 #include "matrix_algo.h"
 
-#include <assert.h>
 #include <stddef.h>
 
 void matrix_cofactor(const matrix_type_t mat, matrix_type_t tmp, unsigned p, unsigned q)
 {
-    unsigned n = matrix_height(mat), i = 1, j = 1;
+    unsigned i = 1, j = 1;
     unsigned row, col;
 
-    assert(matrix_height(mat) == matrix_width(mat));
-    assert(matrix_height(tmp) == matrix_width(tmp));
-
-    for (row = 1; row <= n; row++) {
-        for (col = 1; col <= n; col++) {
+    for (row = 1; row <= matrix_height(mat); row++) {
+        for (col = 1; col <= matrix_width(mat); col++) {
             if ((row != p) && (col != q)) {
                 matrix_set(tmp, i, j, matrix_get(mat, row, col));
                 j++;
-                if (j == n) {
+                if (j == matrix_height(mat)) {
                     j = 1;
                     i++;
                 }
@@ -25,95 +21,64 @@ void matrix_cofactor(const matrix_type_t mat, matrix_type_t tmp, unsigned p, uns
     }
 }
 
-int matrix_determinant(const matrix_type_t mat, long double*det)
+double matrix_determinant(const matrix_type_t mat)
 {
-    int r;
-    unsigned n, i;
+    unsigned i;
     
+    double det;
     matrix_type_t tmp;
     int sign;
 
-    assert(matrix_height(mat) == matrix_width(mat));
-
-    n = matrix_height(mat);
-
-    if (n == 1) {
-        return matrix_get(mat, 0, 0);
+    if (matrix_height(mat) == 1) {
+        return matrix_get(mat, 1, 1);
     }
 
-    tmp = matrix_create(n - 1, n - 1);
-    if (tmp == NULL) {
-        r = -1;
-        goto err0;
-    }
-
-    (*det) = 0.0;
+    det = 0.0;
+    tmp = matrix_create(matrix_height(mat) - 1, matrix_width(mat) - 1);
+    matrix_set_def_val(tmp, 0.0);
     sign = 1;
 
-    for (i = 1; i <= n; i++) {
-        long double det1;
-        r = matrix_determinant(tmp, &det1);
-        if (r) {
-            goto err1;
-        }
+    for (i = 1; i <= matrix_height(mat); i++) {
         matrix_cofactor(mat, tmp, 1, i);
-        (*det) += sign * matrix_get(mat, 1, i) * det1;
+        det += sign * matrix_get(mat, 1, i) * matrix_determinant(tmp);
         sign = -sign;
     }
 
     matrix_free(tmp);
 
- err1:
-    matrix_free(tmp);
- err0:
-    return r;
+    return det;
 }
 
 matrix_type_t matrix_adjoint(const matrix_type_t mat)
 {
-    int r;
-    
-    unsigned i, j, n;
+    unsigned i, j;
     matrix_type_t res;
     matrix_type_t tmp;
     int sign;
 
-    assert(matrix_height(mat) == matrix_width(mat));
-
-    n = matrix_height(mat);
-
-    res = matrix_create(n, n);
+    res = matrix_create(matrix_height(mat), matrix_width(mat));
+    matrix_set_def_val(res, 0.0);
     if (res == NULL) {
         goto err0;
     }
 
-    if (n == 1) {
-        long double cell = matrix_get(mat, 1, 1);
-        matrix_set(res, 1, 1, cell);
-        return res;
-    }
-
     tmp = matrix_create(matrix_height(mat) - 1, matrix_width(mat) - 1);
+    matrix_set_def_val(tmp, 0.0);    
     if (tmp == NULL) {
         goto err1;
-    }    
+    }
 
     sign = 1;
 
-    for (i = 1; i <= n; i++) {
-        for (j = 1; j <= n; j++) {
-            long double det;
-            long double cell;
+    for (i = 1; i <= matrix_height(mat); i++) {
+        for (j = 1; j <= matrix_width(mat); j++) {
+            double cell;
             
             matrix_cofactor(mat, tmp, i, j);
-            r = matrix_determinant(tmp, &det);
-            if (r) {
-                goto err2;
-            }
 
-            sign = ((i + j) % 2 == 0) ? 1: -1;
+            sign = ((i+j)%2==0)? 1: -1;
 
-            cell = sign * det;
+            cell = (sign) * matrix_determinant(tmp);
             matrix_set(res, j, i, cell);
         }
     }
@@ -122,8 +87,6 @@ matrix_type_t matrix_adjoint(const matrix_type_t mat)
 
     return res;
 
- err2:
-    matrix_free(tmp);
  err1:
     matrix_free(res);
  err0:
@@ -132,29 +95,28 @@ matrix_type_t matrix_adjoint(const matrix_type_t mat)
 
 matrix_type_t matrix_inverse(const matrix_type_t mat)
 {
-    int r;
     unsigned i, j;
     matrix_type_t res;
     matrix_type_t adj;
-    long double det;
+    double det;
 
     res = matrix_create(matrix_height(mat), matrix_width(mat));
     if (res == NULL) {
         goto err0;
     }
+    matrix_set_def_val(res, 0.0);
+
     adj = matrix_adjoint(mat);
     if (adj == NULL) {
         goto err1;
     }
-    r = matrix_determinant(mat, &det);
-    if (r) {
-        goto err2;
-    }
 
-    for (i = 0; i < matrix_height(res); i++) {
-        for (j = 0; j < matrix_width(res); j++) {
-            long double cell = matrix_get(adj, i, j) / det;
-            matrix_set(res, i, j, cell + 0.0);
+    det = matrix_determinant(mat);
+
+    for (i = 1; i <= matrix_height(res); i++) {
+        for (j = 1; j <= matrix_width(res); j++) {
+            double cell = matrix_get(adj, i, j) / det;
+            matrix_set(res, i, j, cell);
         }
     }
 
@@ -162,8 +124,6 @@ matrix_type_t matrix_inverse(const matrix_type_t mat)
 
     return res;
 
- err2:
-    matrix_free(adj);
  err1:
     matrix_free(res);
  err0:

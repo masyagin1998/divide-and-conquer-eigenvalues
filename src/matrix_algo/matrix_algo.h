@@ -7,8 +7,6 @@ matrix_type_t matrix_plus(const matrix_type_t a, const matrix_type_t b);
 matrix_type_t matrix_minus(const matrix_type_t a, const matrix_type_t b);
 matrix_type_t matrix_mul(const matrix_type_t a, const matrix_type_t b);
 
-int matrix_determinant(const matrix_type_t mat, long double*det);
-matrix_type_t matrix_adjoint(const matrix_type_t mat);
 matrix_type_t matrix_inverse(const matrix_type_t mat);
 
 matrix_type_t matrix_transpose(const matrix_type_t mat);

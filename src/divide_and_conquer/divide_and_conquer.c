@@ -9,6 +9,18 @@
 #include <assert.h>
 #include <math.h>
 
+/*
+  If DIVIDE_AND_CONQUER_DEBUG is defined,
+  matrix_divide_and_conquer will print
+  some debug info to stdout.
+ */
+#define DIVIDE_AND_CONQUER_DEBUG
+
+#ifdef DIVIDE_AND_CONQUER_DEBUG
+#include <stdio.h>
+#include "utils.h"
+#endif  /* DIVIDE_AND_CONQUER_DEBUG */
+
 static matrix_type_t matrix_from_part(const matrix_type_t T, unsigned b, unsigned e)
 {
     unsigned n = (e - b + 1);
@@ -22,9 +34,11 @@ static matrix_type_t matrix_from_part(const matrix_type_t T, unsigned b, unsigne
     for (i = b; i <= e; i++) {
         for (j = b; j <= e; j++) {
             long double cell = matrix_get(T, i, j);
-            matrix_set(res, i - b, j - b, cell);
+            matrix_set(res, i - b + 1, j - b + 1, cell);
         }
     }
+
+    return res;
 
  err0:
     return NULL;
@@ -53,6 +67,7 @@ int matrix_divide_and_conquer(const matrix_type_t T, matrix_type_t*Q, matrix_typ
     matrix_type_t v_hat;
     unsigned k;
     unsigned jj;
+    matrix_type_t P, P1;
     
     assert(matrix_height(T) == matrix_width(T));
 
@@ -125,9 +140,32 @@ int matrix_divide_and_conquer(const matrix_type_t T, matrix_type_t*Q, matrix_typ
         matrix_set(v, i, 1, cell);
     }
     for (i = m + 1; i <= n; i++) {
-        cell = matrix_get(Q2, 1, i);
+        cell = matrix_get(Q2, 1, i - m);
         matrix_set(v, i, 1, cell);
     }
+
+#ifdef DIVIDE_AND_CONQUER_DEBUG
+    printf("----divide-and-conquer----\n");
+    printf("T1:\n");
+    matrix_print(T1);
+    printf("Q1:\n");
+    matrix_print(Q1);
+    printf("L1:\n");
+    matrix_print(L1);
+    printf("\n");
+    printf("T2:\n");
+    matrix_print(T2);
+    printf("Q2:\n");
+    matrix_print(Q2);
+    printf("L2:\n");
+    matrix_print(L2);
+    printf("\n");
+    printf("D:\n");
+    matrix_print(D);
+    printf("v:\n");
+    matrix_print(v);
+    printf("\n");
+#endif  /* DIVIDE_AND_CONQUER_DEBUG */
 
     ind = matrix_diag_permut(D);
     tmp1 = matrix_mul(ind, D);
@@ -141,11 +179,34 @@ int matrix_divide_and_conquer(const matrix_type_t T, matrix_type_t*Q, matrix_typ
     matrix_free(v);
     v = tmp1;
 
-    r = deflate(D, v, &v_prime, &eigenvalues, &eigenvectors, &n_deflated, &G, eps);
+#ifdef DIVIDE_AND_CONQUER_DEBUG
+    printf("IND:\n");
+    matrix_print(ind);
+    printf("D new:\n");
+    matrix_print(D);
+    printf("v new:\n");
+    matrix_print(v);
+    printf("\n");
+#endif  /* DIVIDE_AND_CONQUER_DEBUG */
+
+    r = deflate(D, &v, &v_prime, &eigenvalues, &eigenvectors, &n_deflated, &G, eps);
     if (r) {
         r = -9;
         goto err2;
     }
+
+#ifdef DIVIDE_AND_CONQUER_DEBUG
+    printf("v prime deflate:\n");
+    matrix_print(v_prime);
+    printf("eigenvalues deflate:\n");
+    matrix_print(eigenvalues);
+    printf("eigenvectors deflate:\n");
+    matrix_print(eigenvectors);
+    printf("n deflated:\n");
+    printf("%u\n", n_deflated);
+    printf("G:\n");
+    matrix_print(G);
+#endif  /* DIVIDE_AND_CONQUER_DEBUG */
 
     lambda = matrix_create(n_deflated, 1);
     if (lambda == NULL) {
@@ -168,33 +229,124 @@ int matrix_divide_and_conquer(const matrix_type_t T, matrix_type_t*Q, matrix_typ
         matrix_set(lambda, i, 1, cell);
     }
 
+#ifdef DIVIDE_AND_CONQUER_DEBUG
+    printf("lambda:\n");
+    matrix_print(lambda);
+#endif  /* DIVIDE_AND_CONQUER_DEBUG */
+
     v_hat = matrix_create(n_deflated, 1);
     for (k = 1; k <= n_deflated; k++) {
-        double cell;
+        long double cell;
+        long double a;
+        long double b;
+        int sign = matrix_get(v_prime, 1, k) > 0.0 ? 1 : -1;
         if (k == 1) {
-            cell = 0.0; /* TODO */
+            a = 1.0;
+            for (i = 1; i <= matrix_height(lambda); i++) {
+                a *= (matrix_get(lambda, i, 1) - matrix_get(D, k, k));
+            }
+            b = 1.0;
+            for (i = 2; i <= matrix_height(D); i++) {
+                b *= (matrix_get(D, i, i) - matrix_get(D, k, k));
+            }
+            cell = sign * sqrtl(a / (rho * b));
             matrix_set(v_hat, k, 1, cell);
         } else {
-            cell = 0.0; /* TODO */
+            long double num;
+            long double denom;
+            a = 1.0;
+            for (i = 1; i <= matrix_height(lambda) - 1; i++) {
+                a *= (matrix_get(D, k, k) - matrix_get(lambda, i, 1));
+            }
+            b = 1.0;
+            for (i = k; i <= n_deflated; i++) {
+                b *= (matrix_get(lambda, i, 1) - matrix_get(D, k, k));
+            }
+            num = a * b;
+
+            a = 1.0;
+            for (i = 1; i <= k - 1; i++) {
+                a *= (matrix_get(D, k, k) - matrix_get(D, i, i));
+            }
+            b = 1.0;
+            for (i = k + 1; i <= n_deflated; i++) {
+                b *= (matrix_get(D, i, i) - matrix_get(D, k, k));
+            }
+
+            denom = rho * a * b;
+            
+            cell = sign * sqrtl(num / denom);
             matrix_set(v_hat, k, 1, cell);
         }
     }
+
+#ifdef DIVIDE_AND_CONQUER_DEBUG
+    printf("v_hat:\n");
+    matrix_print(v_hat);
+#endif  /* DIVIDE_AND_CONQUER_DEBUG */
+    
     jj = 1;
     for (i = 1; i <= n; i++) {
         double cell;
+        unsigned kk;
         if (is_zero(matrix_get(v, i, 1))) {
             continue;
         }
         cell = matrix_get(lambda, jj, 1);
         matrix_set(eigenvalues, i, i, cell);
-        /* TODO. */
+        tmp1 = matrix_diag(n_deflated, cell);
+        tmp2 = matrix_minus(tmp1, D);
+        matrix_free(tmp1);        
+        tmp1 = matrix_inverse(tmp2);
+        matrix_free(tmp2);
+        tmp2 = matrix_mul(tmp1, v_hat);
+        matrix_free(tmp1);
         jj++;
+        tmp1 = matrix_create(n, 1);
+        matrix_set_def_val(tmp1, 0.0);
+        kk = 1;
+        for (j = 1; j <= n; j++) {
+            if (is_zero(matrix_get(v, j, 1))) {
+                matrix_set(tmp1, j, 1, 0.0);
+            } else {
+                cell = matrix_get(tmp2, kk, 1);
+                matrix_set(tmp1, j, 1, cell);
+                kk++;
+            }
+        }
+
+        for (j = 1; j <= n; j++) {
+            cell = matrix_get(tmp1, j, 1) / vector_norm(tmp1);
+            matrix_set(eigenvectors, j, i, cell);
+        }
+
+        matrix_free(tmp1);
+        matrix_free(tmp2);
     }
 
     tmp1 = matrix_mul(G, eigenvectors);
     matrix_free(eigenvectors);
     eigenvectors = tmp1;
+
+    P = ind;
     
+    P1 = matrix_diag_permut(eigenvalues);
+    eigenvectors = matrix_mul(eigenvectors, P1);
+    eigenvalues = matrix_mul(matrix_mul(matrix_transpose(P), eigenvalues), P);
+    eigenvectors = matrix_mul(matrix_mul(matrix_transpose(P), eigenvectors), P);
+    (*L) = eigenvalues;
+
+
+    (*Q) = matrix_from_two_blocks(Q1, Q2);
+    tmp1 = matrix_mul((*Q), eigenvectors);
+    matrix_free((*Q));
+    (*Q) = tmp1;
+
+#ifdef DIVIDE_AND_CONQUER_DEBUG
+    printf("----divide-and-conquer----\n");
+#endif  /* DIVIDE_AND_CONQUER_DEBUG */
+
+    return 0;
 
  err3:
     matrix_free(v);

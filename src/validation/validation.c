@@ -17,7 +17,7 @@ int matrix_is_symmetric(const matrix_type_t mat, long double eps)
     }
 
     for (i = 1; i <= matrix_height(mat); i++) {
-        for (j = 1; j <= (i + 1); j++) {
+        for (j = 1; j <= i; j++) {
             if (!are_equal(matrix_get(mat, i, j), matrix_get(mat, j, i))) {
                 return 0;
             }

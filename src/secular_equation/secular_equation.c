@@ -2,14 +2,26 @@
 
 #include <math.h>
 
-static long double calculate_c1(matrix_type_t D, matrix_type_t v, unsigned i, long double lambda_init)
+/*
+  If SECULAR_EQUATION_DEBUG is defined,
+  secular_equation will print
+  some debug info to stdout.
+ */
+#define SECULAR_EQUATION_DEBUG
+
+#ifdef SECULAR_EQUATION_DEBUG
+#include <stdio.h>
+#include "utils.h"
+#endif  /* SECULAR_EQUATION_DEBUG */
+
+static long double calculate_c1(const matrix_type_t D, const matrix_type_t v, unsigned i, long double lambda_init)
 {
     unsigned k;
 
     long double res = 0.0;
 
     for (k = 1; k <= i; k++) {
-        res += ((matrix_get(v, 1, k) * matrix_get(v, 1, k)) / ((matrix_get(D, k, k) - lambda_init) * (matrix_get(D, k, k) - lambda_init)));
+        res += ((matrix_get(v, k, 1) * matrix_get(v, k, 1)) / ((matrix_get(D, k, k) - lambda_init) * (matrix_get(D, k, k) - lambda_init)));
     }
 
     res *= ((matrix_get(D, i, i) - lambda_init) * (matrix_get(D, i, i) - lambda_init));
@@ -17,16 +29,20 @@ static long double calculate_c1(matrix_type_t D, matrix_type_t v, unsigned i, lo
     return res;
 }
 
-static long double calculate_c1_hat(matrix_type_t D, matrix_type_t v, unsigned i, long double lambda_init)
+static long double calculate_c1_hat(const matrix_type_t D, const matrix_type_t v, unsigned i, long double lambda_init)
 {
     unsigned k;
 
     long double res = 0.0;
 
+    for (k = 1; k <= i; k++) {
+        res += ((matrix_get(v, k, 1) * matrix_get(v, k, 1)) * (matrix_get(D, k, k) - matrix_get(D, i, i)) / ((matrix_get(D, k, k) - lambda_init) * (matrix_get(D, k, k) - lambda_init)));
+    }
+
     return res;
 }
 
-static long double calculate_c2(matrix_type_t D, matrix_type_t v, unsigned i, long double lambda_init)
+static long double calculate_c2(const matrix_type_t D, const matrix_type_t v, unsigned i, long double lambda_init)
 {
     unsigned k;
     unsigned n = matrix_height(D);
@@ -34,7 +50,7 @@ static long double calculate_c2(matrix_type_t D, matrix_type_t v, unsigned i, lo
     long double res = 0.0;
 
     for (k = i + 1; k <= n; k++) {
-        res += ((matrix_get(v, 1, k) * matrix_get(v, 1, k)) / ((matrix_get(D, k, k) - lambda_init) * (matrix_get(D, k, k) - lambda_init)));
+        res += ((matrix_get(v, k, 1) * matrix_get(v, k, 1)) / ((matrix_get(D, k, k) - lambda_init) * (matrix_get(D, k, k) - lambda_init)));
     }
 
     res *= ((matrix_get(D, i + 1, i + 1) - lambda_init) * (matrix_get(D, i + 1, i + 1) - lambda_init));
@@ -42,11 +58,16 @@ static long double calculate_c2(matrix_type_t D, matrix_type_t v, unsigned i, lo
     return res;
 }
 
-static long double calculate_c2_hat(matrix_type_t D, matrix_type_t v, unsigned i, long double lambda_init)
+static long double calculate_c2_hat(const matrix_type_t D, const matrix_type_t v, unsigned i, long double lambda_init)
 {
     unsigned k;
+    unsigned n = matrix_height(D);
 
     long double res = 0.0;
+
+    for (k = i + 1; k <= n; k++) {
+        res += ((matrix_get(v, k, 1) * matrix_get(v, k, 1)) * (matrix_get(D, k, k) - matrix_get(D, i + 1, i + 1)) / ((matrix_get(D, k, k) - lambda_init) * (matrix_get(D, k, k) - lambda_init)));
+    }
 
     return res;
 }
@@ -56,26 +77,47 @@ static long double calculate_c3(long double c1_hat, long double c2_hat, long dou
     return 1 / rho + c1_hat + c2_hat;
 }
 
-static long double calculate_func(matrix_type_t D, matrix_type_t v, unsigned i, long double lambda_init)
+static long double calculate_func(const matrix_type_t D, const matrix_type_t v, long double lambda_init)
 {
     unsigned k;
+    unsigned n = matrix_height(D);
 
     long double res = 0.0;
+
+    for (k = 1; k <= n; k++) {
+        res += ((matrix_get(v, k, 1) * matrix_get(v, k, 1)) / (matrix_get(D, k, k) - lambda_init));
+    }
 
     return res;
 }
 
-long double solve_secular_equation(long double rho, matrix_type_t D, matrix_type_t v, unsigned i, long double lambda_init, unsigned n, long double eps)
+long double solve_secular_equation(long double rho, const matrix_type_t D, const matrix_type_t v, unsigned i, long double lambda_init, unsigned n, long double eps)
 {
     long double error = 1.0;
     unsigned iter = 1;
+
+#ifdef SECULAR_EQUATION_DEBUG
+    printf("-----secular-equation-----\n");
+#endif  /* SECULAR_EQUATION_DEBUG */
+
+#ifdef SECULAR_EQUATION_DEBUG
+    printf("rho:\n");
+    printf("%Lf\n", rho);
+    printf("D:\n");
+    matrix_print(D);
+    printf("v:\n");
+    matrix_print(v);
+    printf("i:\n");
+    printf("%u\n", i);
+    printf("lambda init:\n");
+    printf("%Lf\n", lambda_init);
+#endif  /* SECULAR_EQUATION_DEBUG */
 
     while (error > eps) {
         long double c1 = calculate_c1(D, v, i, lambda_init);
         long double c1_hat = calculate_c1_hat(D, v, i, lambda_init);
         if (i == n) {
             lambda_init = (c1 * rho + c1_hat * rho * matrix_get(D, n, n) + matrix_get(D, n, n)) / (1 + rho * c1_hat);
-            error = fabsl(1 / rho + calculate_func(D, v, i, lambda_init));
         } else {
             long double c2 = calculate_c2(D, v, i, lambda_init);
             long double c2_hat = calculate_c2_hat(D, v, i, lambda_init);
@@ -89,11 +131,19 @@ long double solve_secular_equation(long double rho, matrix_type_t D, matrix_type
             } else {
                 lambda_init = root2;
             }
-
-            error = fabsl(1 / rho /* + todo. */ );
         }
+        error = fabsl(1 / rho + calculate_func(D, v, lambda_init));        
         iter++;
     }
+
+#ifdef SECULAR_EQUATION_DEBUG
+    printf("lambda:\n");
+    printf("%Lf\n", lambda_init);
+#endif  /* SECULAR_EQUATION_DEBUG */
+
+#ifdef SECULAR_EQUATION_DEBUG
+    printf("-----secular-equation-----\n");
+#endif  /* SECULAR_EQUATION_DEBUG */
 
     return lambda_init;
 }

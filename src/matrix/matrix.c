@@ -54,7 +54,7 @@ __inline__ void matrix_set(matrix_type_t mat, unsigned h, unsigned w, long doubl
     assert((h >= 1) && (h <= mat->h));
     assert((w >= 1) && (w <= mat->w));
 
-    mat->vals[((h - 1) * mat->h) + (w - 1)] = val;
+    mat->vals[((h - 1) * mat->w) + (w - 1)] = val;
 }
 
 __inline__ long double matrix_get(const matrix_type_t mat, unsigned h, unsigned w)
@@ -62,11 +62,10 @@ __inline__ long double matrix_get(const matrix_type_t mat, unsigned h, unsigned 
     assert((h >= 1) && (h <= mat->h));
     assert((w >= 1) && (w <= mat->w));
 
-    return mat->vals[((h - 1) * mat->h) + (w - 1)];
+    return mat->vals[((h - 1) * mat->w) + (w - 1)];
 }
 
 void matrix_free(matrix_type_t mat)
 {
-    free(mat->vals);
     free(mat);
 }
