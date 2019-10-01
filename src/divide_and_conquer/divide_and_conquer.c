@@ -71,7 +71,11 @@ int matrix_divide_and_conquer(const matrix_type_t T, matrix_type_t*Q, matrix_typ
     assert(matrix_height(T) == matrix_width(T));
 
     n = matrix_height(T);
-    
+
+    /*
+      Final stage of recursion: 1x1 matrix L.
+      L = 1 * L * 1.
+    */
     if (n == 1) {
         (*Q) = matrix_create(1, 1);
         if ((*Q) == NULL) {
@@ -87,6 +91,10 @@ int matrix_divide_and_conquer(const matrix_type_t T, matrix_type_t*Q, matrix_typ
         return 0;
     }
 
+    /*
+      Partition nxn matrix T to two matrices: T1 and T2,
+      find Q1, L1 and Q2, L2 for them, using recursion.
+     */
     if (n % 2 == 0) {
         m = n / 2;
     } else {
@@ -122,12 +130,20 @@ int matrix_divide_and_conquer(const matrix_type_t T, matrix_type_t*Q, matrix_typ
         goto err1;
     }
 
+    /*
+      Compute matrices D and v from Q1, L1 and Q2, L2:
+      D = L1 0
+          0 L2
+
+      v = q1
+          q2
+      .
+     */
     D = matrix_from_two_blocks(L1, L2);
     if (D == NULL) {
         r = -7;
         goto err1;
     }
-
     v = matrix_create(n, 1);
     if (v == NULL) {
         r = -8;
@@ -166,6 +182,14 @@ int matrix_divide_and_conquer(const matrix_type_t T, matrix_type_t*Q, matrix_typ
     printf("\n");
 #endif  /* DIVIDE_AND_CONQUER_DEBUG */
 
+    /*
+      Compute matrix P for reordering D,
+      so all diagonal elements of D are sorted in ascending order.
+
+      Compute sorted D.
+
+      Reorder v, according to P.
+     */
     P = matrix_diag_permut(D);
     tmp1 = matrix_mul(P, D);
     tmp2 = matrix_transpose(P);
@@ -188,6 +212,11 @@ int matrix_divide_and_conquer(const matrix_type_t T, matrix_type_t*Q, matrix_typ
     printf("\n");
 #endif  /* DIVIDE_AND_CONQUER_DEBUG */
 
+    /*
+      Remove zero values in v and close to each other values in D.
+
+      Be careful, D and v can be changed after using deflation.
+     */
     r = deflate(&D, &v, &v_prime, &eigenvalues, &eigenvectors, &n_deflated, &G, eps);
     if (r) {
         r = -9;
@@ -207,6 +236,11 @@ int matrix_divide_and_conquer(const matrix_type_t T, matrix_type_t*Q, matrix_typ
     matrix_print(G);
 #endif  /* DIVIDE_AND_CONQUER_DEBUG */
 
+
+    /*
+      Solve secular equation for deflated D and v and
+      find eigenvalues of D.
+     */
     lambda = matrix_create(n_deflated, 1);
     if (lambda == NULL) {
         r = -10;
@@ -220,10 +254,16 @@ int matrix_divide_and_conquer(const matrix_type_t T, matrix_type_t*Q, matrix_typ
         long double lambda_init;
         long double cell;
         if (i == n_deflated) {
+            /*
+              Last eigenvalue.
+             */
             long double vn = vector_norm(v);
             dn = matrix_get(D, n_deflated, n_deflated) + vn * vn;
             lambda_init = (matrix_get(D, n_deflated, n_deflated) + dn) / 2.0;
         } else {
+            /*
+              Other eigenvalues.
+             */
             lambda_init = (matrix_get(D, i, i) + matrix_get(D, i + 1, i + 1)) / 2.0;
         }
         cell = solve_secular_equation(rho, D, tmp1, i, lambda_init, n_deflated, eps);
@@ -239,6 +279,9 @@ int matrix_divide_and_conquer(const matrix_type_t T, matrix_type_t*Q, matrix_typ
     matrix_print(lambda);
 #endif  /* DIVIDE_AND_CONQUER_DEBUG */
 
+    /*
+      Calculate eigenvectors for non-deflated D, using Gu-Eisenstat algorithm.
+     */
     v_hat = matrix_create(n_deflated, 1);
     for (k = 1; k <= n_deflated; k++) {
         long double cell;
@@ -340,7 +383,10 @@ int matrix_divide_and_conquer(const matrix_type_t T, matrix_type_t*Q, matrix_typ
     printf("eigenvalues:\n");
     matrix_print(eigenvalues);
 #endif  /* DIVIDE_AND_CONQUER_DEBUG */    
-    
+
+    /*
+      Permut and rotate matrix back.
+    */
     P1 = matrix_diag_permut(eigenvalues);
     tmp1 = matrix_mul(P1, eigenvalues);
     matrix_free(eigenvalues);
@@ -361,8 +407,11 @@ int matrix_divide_and_conquer(const matrix_type_t T, matrix_type_t*Q, matrix_typ
     eigenvectors = matrix_mul(tmp2, P);
     matrix_free(tmp2);
     matrix_free(tmp1);
-    (*L) = eigenvalues;
 
+    /*
+      Form resulting Q and L matrices.
+     */
+    (*L) = eigenvalues;
 
     (*Q) = matrix_from_two_blocks(Q1, Q2);
     tmp1 = matrix_mul((*Q), eigenvectors);

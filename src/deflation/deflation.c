@@ -97,6 +97,9 @@ int deflate(matrix_type_t*D, matrix_type_t*v, matrix_type_t*v_prime, matrix_type
         goto err0;
     }
 
+    /*
+      Compute plane rotation matrix G.
+     */
     for (j = 1; j <= n - 1; j++) {
         if (are_equal(matrix_get((*D), j, j), matrix_get((*D), j + 1, j + 1))) {
             long double c, s;
@@ -123,6 +126,9 @@ int deflate(matrix_type_t*D, matrix_type_t*v, matrix_type_t*v_prime, matrix_type
         }
     }
 
+    /*
+      Simplifying D and V.
+     */
     (*n_deflated) = 0;
     index_deflation = (unsigned*) malloc(n * sizeof(unsigned));
     index_deflation_len = 0;
@@ -199,6 +205,9 @@ int deflate(matrix_type_t*D, matrix_type_t*v, matrix_type_t*v_prime, matrix_type
     matrix_print((*D));
 #endif  /* DEFLATION_DEBUG */
 
+    /*
+      Remove entries of D corresponding to deflated entries 
+    */
     while (ii <= nn) {
         if (is_zero(matrix_get((*v), i, 1))) {
             tmp1 = matrix_remove_ith((*D), ii);
@@ -233,6 +242,9 @@ int deflate(matrix_type_t*D, matrix_type_t*v, matrix_type_t*v_prime, matrix_type
     }
     matrix_set_def_val((*eigenvalues), 0.0);
 
+    /*
+      Compute eigevalues and eigenvectors for deflated cases.
+    */
     ii = 1;
     for (i = 1; i <= n; i++) {
         if (is_zero(matrix_get((*v), i, 1))) {
