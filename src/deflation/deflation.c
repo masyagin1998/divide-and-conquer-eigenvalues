@@ -150,9 +150,9 @@ int deflate(matrix_type_t*D, matrix_type_t*v, matrix_type_t*v_prime, matrix_type
 
 #ifdef DEFLATION_DEBUG
     printf("G:\n");
-    matrix_print((*G));
+    matrix_print((*G), eps);
     printf("v:\n");
-    matrix_print((*v));
+    matrix_print((*v), eps);
 #endif  /* DEFLATION_DEBUG */
 
     v_prime_arr = (long double*) malloc(n * sizeof(long double));
@@ -187,7 +187,7 @@ int deflate(matrix_type_t*D, matrix_type_t*v, matrix_type_t*v_prime, matrix_type
     printf("n_deflated:\n");
     printf("%u\n", (*n_deflated));
     printf("v_prime:\n");
-    matrix_print((*v_prime));
+    matrix_print((*v_prime), eps);
 #endif  /* DEFLATION_DEBUG */
 
     ii = 1;
@@ -202,7 +202,7 @@ int deflate(matrix_type_t*D, matrix_type_t*v, matrix_type_t*v_prime, matrix_type
 
 #ifdef DEFLATION_DEBUG
     printf("D before deflation:\n");
-    matrix_print((*D));
+    matrix_print((*D), eps);
 #endif  /* DEFLATION_DEBUG */
 
     /*
@@ -226,7 +226,7 @@ int deflate(matrix_type_t*D, matrix_type_t*v, matrix_type_t*v_prime, matrix_type
 
 #ifdef DEFLATION_DEBUG
     printf("D after deflation:\n");
-    matrix_print((*D));
+    matrix_print((*D), eps);
 #endif  /* DEFLATION_DEBUG */    
 
     (*eigenvectors) = matrix_create(n, n);

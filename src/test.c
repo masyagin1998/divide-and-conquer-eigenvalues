@@ -5,7 +5,7 @@
 
 #include <stdio.h>
 
-#define EPS 0.0000001
+#define EPS 0.00000000000001
 
 int main(int argc, char**argv)
 {
@@ -54,18 +54,18 @@ int main(int argc, char**argv)
     }
     printf("\n");
     printf("in:\n");
-    matrix_print(T);
+    matrix_print(T, EPS);
     printf("Q:\n");
-    matrix_print(Q);
+    matrix_print(Q, EPS);
     printf("L:\n");
-    matrix_print(L);
+    matrix_print(L, EPS);
     Q_t = matrix_transpose(Q);
     printf("Q t:\n");
-    matrix_print(Q_t);
+    matrix_print(Q_t, EPS);
     printf("Q * L * Q t:\n");
     tmp1 = matrix_mul(Q, L);
     tmp2 = matrix_mul(tmp1, Q_t);
-    matrix_print(tmp2);
+    matrix_print(tmp2, EPS);
     matrix_free(tmp1);
     matrix_free(tmp2);
     matrix_free(Q);

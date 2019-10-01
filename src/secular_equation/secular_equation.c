@@ -104,9 +104,9 @@ long double solve_secular_equation(long double rho, const matrix_type_t D, const
     printf("rho:\n");
     printf("%Lf\n", rho);
     printf("D:\n");
-    matrix_print(D);
+    matrix_print(D, eps);
     printf("v:\n");
-    matrix_print(v);
+    matrix_print(v, eps);
     printf("i:\n");
     printf("%u\n", i);
     printf("lambda init:\n");

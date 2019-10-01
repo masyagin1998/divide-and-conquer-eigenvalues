@@ -162,23 +162,23 @@ int matrix_divide_and_conquer(const matrix_type_t T, matrix_type_t*Q, matrix_typ
 #ifdef DIVIDE_AND_CONQUER_DEBUG
     printf("----divide-and-conquer-beg----\n");
     printf("T1:\n");
-    matrix_print(T1);
+    matrix_print(T1, eps);
     printf("Q1:\n");
-    matrix_print(Q1);
+    matrix_print(Q1, eps);
     printf("L1:\n");
-    matrix_print(L1);
+    matrix_print(L1, eps);
     printf("\n");
     printf("T2:\n");
-    matrix_print(T2);
+    matrix_print(T2, eps);
     printf("Q2:\n");
-    matrix_print(Q2);
+    matrix_print(Q2, eps);
     printf("L2:\n");
-    matrix_print(L2);
+    matrix_print(L2, eps);
     printf("\n");
     printf("D:\n");
-    matrix_print(D);
+    matrix_print(D, eps);
     printf("v:\n");
-    matrix_print(v);
+    matrix_print(v, eps);
     printf("\n");
 #endif  /* DIVIDE_AND_CONQUER_DEBUG */
 
@@ -204,11 +204,11 @@ int matrix_divide_and_conquer(const matrix_type_t T, matrix_type_t*Q, matrix_typ
 
 #ifdef DIVIDE_AND_CONQUER_DEBUG
     printf("P:\n");
-    matrix_print(P);
+    matrix_print(P, eps);
     printf("D new:\n");
-    matrix_print(D);
+    matrix_print(D, eps);
     printf("v new:\n");
-    matrix_print(v);
+    matrix_print(v, eps);
     printf("\n");
 #endif  /* DIVIDE_AND_CONQUER_DEBUG */
 
@@ -225,15 +225,15 @@ int matrix_divide_and_conquer(const matrix_type_t T, matrix_type_t*Q, matrix_typ
 
 #ifdef DIVIDE_AND_CONQUER_DEBUG
     printf("v prime deflate:\n");
-    matrix_print(v_prime);
+    matrix_print(v_prime, eps);
     printf("eigenvalues deflate:\n");
-    matrix_print(eigenvalues);
+    matrix_print(eigenvalues, eps);
     printf("eigenvectors deflate:\n");
-    matrix_print(eigenvectors);
+    matrix_print(eigenvectors, eps);
     printf("n deflated:\n");
     printf("%u\n", n_deflated);
     printf("G:\n");
-    matrix_print(G);
+    matrix_print(G, eps);
 #endif  /* DIVIDE_AND_CONQUER_DEBUG */
 
 
@@ -274,9 +274,9 @@ int matrix_divide_and_conquer(const matrix_type_t T, matrix_type_t*Q, matrix_typ
 
 #ifdef DIVIDE_AND_CONQUER_DEBUG
     printf("v_prime:\n");
-    matrix_print(v_prime);
+    matrix_print(v_prime, eps);
     printf("lambda:\n");
-    matrix_print(lambda);
+    matrix_print(lambda, eps);
 #endif  /* DIVIDE_AND_CONQUER_DEBUG */
 
     /*
@@ -330,7 +330,7 @@ int matrix_divide_and_conquer(const matrix_type_t T, matrix_type_t*Q, matrix_typ
 
 #ifdef DIVIDE_AND_CONQUER_DEBUG
     printf("v_hat:\n");
-    matrix_print(v_hat);
+    matrix_print(v_hat, eps);
 #endif  /* DIVIDE_AND_CONQUER_DEBUG */
     
     jj = 1;
@@ -379,9 +379,9 @@ int matrix_divide_and_conquer(const matrix_type_t T, matrix_type_t*Q, matrix_typ
 
 #ifdef DIVIDE_AND_CONQUER_DEBUG
     printf("eigenvectors:\n");
-    matrix_print(eigenvectors);
+    matrix_print(eigenvectors, eps);
     printf("eigenvalues:\n");
-    matrix_print(eigenvalues);
+    matrix_print(eigenvalues, eps);
 #endif  /* DIVIDE_AND_CONQUER_DEBUG */    
 
     /*

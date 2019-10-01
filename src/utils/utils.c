@@ -1,21 +1,31 @@
 #include "matrix.h"
 
 #include <stdio.h>
+#include <math.h>
 
 #define MAT_VAL "%5.5Lf"
 
 #define MAT_VAL_LEN 7
 
-void matrix_print(const matrix_type_t mat)
+void matrix_print(const matrix_type_t mat, long double eps)
 {
     unsigned i, j;
+    long double cell;
 
     for (i = 1; i <= matrix_height(mat); i++) {
         printf("|");
         for (j = 1; j <= matrix_width(mat) - 1; j++) {
-            printf(MAT_VAL" ", matrix_get(mat, i, j));
+            cell = matrix_get(mat, i, j);
+            if (fabsl(cell) <= eps) {
+                cell = 0.0;
+            }
+            printf(MAT_VAL" ", cell);
         }
-        printf(MAT_VAL"|\n", matrix_get(mat, i, matrix_width(mat)));
+        cell = matrix_get(mat, i, matrix_width(mat));
+        if (fabsl(cell) <= eps) {
+            cell = 0.0;
+        }    
+        printf(MAT_VAL"|\n", cell);
     }
 }
 
