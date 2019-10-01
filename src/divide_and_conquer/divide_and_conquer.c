@@ -14,7 +14,7 @@
   matrix_divide_and_conquer will print
   some debug info to stdout.
  */
-#define DIVIDE_AND_CONQUER_DEBUG
+/* #define DIVIDE_AND_CONQUER_DEBUG */
 
 #ifdef DIVIDE_AND_CONQUER_DEBUG
 #include <stdio.h>
@@ -339,28 +339,18 @@ int matrix_divide_and_conquer(const matrix_type_t T, matrix_type_t*Q, matrix_typ
     matrix_print(eigenvectors);
     printf("eigenvalues:\n");
     matrix_print(eigenvalues);
-#endif  /* DIVIDE_AND_CONQUER_DEBUG */
-
-    printf("P:\n");
-    matrix_print(P);
-    
+#endif  /* DIVIDE_AND_CONQUER_DEBUG */    
     
     P1 = matrix_diag_permut(eigenvalues);
-    printf("P1:\n");
-    matrix_print(P1);
     tmp1 = matrix_mul(P1, eigenvalues);
     matrix_free(eigenvalues);
     tmp2 = matrix_transpose(P1);
     eigenvalues = matrix_mul(tmp1, tmp2);
     matrix_free(tmp1);
     matrix_free(tmp2);
-    printf("eigenvalues:\n");
-    matrix_print(eigenvalues);
     tmp1 = matrix_mul(eigenvectors, P1);
     matrix_free(eigenvectors);
     eigenvectors = tmp1;
-    printf("eigens kek:\n");
-    matrix_print(eigenvectors);
     tmp1 = matrix_transpose(P);
     tmp2 = matrix_mul(tmp1, eigenvalues);
     matrix_free(eigenvalues);

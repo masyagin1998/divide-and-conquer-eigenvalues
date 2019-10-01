@@ -11,7 +11,7 @@
   deflate will print
   some debug info to stdout.
  */
-#define DEFLATION_DEBUG
+/* #define DEFLATION_DEBUG */
 
 #ifdef DEFLATION_DEBUG
 #include <stdio.h>
@@ -71,6 +71,8 @@ static void e(matrix_type_t eigenvectors, unsigned i)
 
 int deflate(matrix_type_t*D, matrix_type_t*v, matrix_type_t*v_prime, matrix_type_t*eigenvalues, matrix_type_t*eigenvectors, unsigned*n_deflated, matrix_type_t*G, long double eps)
 {
+    int r;
+    
     unsigned n;
     unsigned i, j;
     matrix_type_t tmp1, tmp2;
@@ -90,6 +92,10 @@ int deflate(matrix_type_t*D, matrix_type_t*v, matrix_type_t*v_prime, matrix_type
     n = matrix_height((*D));
 
     (*G) = matrix_diag(n, 1.0);
+    if ((*G) == NULL) {
+        r = -1;
+        goto err0;
+    }
 
     for (j = 1; j <= n - 1; j++) {
         if (are_equal(matrix_get((*D), j, j), matrix_get((*D), j + 1, j + 1))) {
@@ -97,27 +103,41 @@ int deflate(matrix_type_t*D, matrix_type_t*v, matrix_type_t*v_prime, matrix_type
             matrix_type_t G_tmp;
             rotate(matrix_get((*v), j, 1), matrix_get((*v), j + 1, 1), &c, &s);
             G_tmp = matrix_diag(n, 1.0);
+            if (G_tmp == NULL) {
+                r = -2;
+                goto err1;
+            }
             matrix_set(G_tmp, j, j, c);
             matrix_set(G_tmp, j, j + 1, s);
             matrix_set(G_tmp, j + 1, j, -s);
             matrix_set(G_tmp, j + 1, j + 1, c);
-            printf("G_tmp:\n");
-            matrix_print(G_tmp);
             tmp1 = matrix_mul(G_tmp, (*G));
+            if (tmp1 == NULL) {
+                matrix_free(G_tmp);
+                r = -3;
+                goto err1;
+            }
             matrix_free(G_tmp);
             matrix_free((*G));
             (*G) = tmp1;
         }
     }
-    printf("G:\n");
-    matrix_print(*G);
 
     (*n_deflated) = 0;
     index_deflation = (unsigned*) malloc(n * sizeof(unsigned));
     index_deflation_len = 0;
 
     tmp1 = matrix_transpose((*G));
+    if (tmp1 == NULL) {
+        r = -4;
+        goto err1;
+    }
     tmp2 = matrix_mul(tmp1, (*v));
+    if (tmp2 == NULL) {
+        matrix_free(tmp1);
+        r = -5;
+        goto err1;
+    }
     matrix_free(tmp1);
     matrix_free((*v));
     (*v) = tmp2;
@@ -130,6 +150,10 @@ int deflate(matrix_type_t*D, matrix_type_t*v, matrix_type_t*v_prime, matrix_type
 #endif  /* DEFLATION_DEBUG */
 
     v_prime_arr = (long double*) malloc(n * sizeof(long double));
+    if (v_prime_arr == NULL) {
+        r = -6;
+        goto err2;
+    }
     v_prime_arr_len = 0;
 
     for (i = 1; i <= n; i++) {
@@ -142,11 +166,16 @@ int deflate(matrix_type_t*D, matrix_type_t*v, matrix_type_t*v_prime, matrix_type
     }
 
     (*v_prime) = matrix_create(1, v_prime_arr_len);
+    if ((*v_prime) == NULL) {
+        r = -7;
+        goto err3;
+    }
     for (i = 0; i < v_prime_arr_len; i++) {
         matrix_set((*v_prime), 1, i + 1, v_prime_arr[i]);
     }
 
     free(v_prime_arr);
+    v_prime_arr = NULL;
 
 #ifdef DEFLATION_DEBUG
     printf("n_deflated:\n");
@@ -160,6 +189,10 @@ int deflate(matrix_type_t*D, matrix_type_t*v, matrix_type_t*v_prime, matrix_type
     i = 1;
 
     matrix_type_t DD = matrix_copy((*D));
+    if (DD == NULL) {
+        r = -8;
+        goto err4;
+    }
 
 #ifdef DEFLATION_DEBUG
     printf("D before deflation:\n");
@@ -168,7 +201,13 @@ int deflate(matrix_type_t*D, matrix_type_t*v, matrix_type_t*v_prime, matrix_type
 
     while (ii <= nn) {
         if (is_zero(matrix_get((*v), i, 1))) {
-            (*D) = matrix_remove_ith((*D), ii);
+            tmp1 = matrix_remove_ith((*D), ii);
+            if (tmp1 == NULL) {
+                r = -9;
+                goto err5;
+            }
+            matrix_free((*D));
+            (*D) = tmp1;
             nn--;
         } else {
             ii++;
@@ -182,8 +221,16 @@ int deflate(matrix_type_t*D, matrix_type_t*v, matrix_type_t*v_prime, matrix_type
 #endif  /* DEFLATION_DEBUG */    
 
     (*eigenvectors) = matrix_create(n, n);
+    if ((*eigenvectors) == NULL) {
+        r = -10;
+        goto err5;
+    }
     matrix_set_def_val((*eigenvectors), 0.0);
     (*eigenvalues) = matrix_create(n, n);
+    if ((*eigenvalues) == NULL) {
+        r = -11;
+        goto err6;
+    }
     matrix_set_def_val((*eigenvalues), 0.0);
 
     ii = 1;
@@ -204,4 +251,21 @@ int deflate(matrix_type_t*D, matrix_type_t*v, matrix_type_t*v_prime, matrix_type
 #endif  /* DEFLATION_DEBUG */    
 
     return 0;
+
+ err6:
+    matrix_free((*eigenvectors));
+ err5:
+    matrix_free(DD);
+ err4:
+    matrix_free((*v_prime));
+ err3:
+    if (v_prime_arr != NULL) {
+        free(v_prime_arr);
+    }
+ err2:
+    matrix_free((*v));
+ err1:
+    matrix_free((*G));
+ err0:
+    return r;
 }

@@ -5,7 +5,7 @@
 
 #include <stdio.h>
 
-#define EPS 0.00000000001
+#define EPS 0.0000001
 
 int main(int argc, char**argv)
 {
