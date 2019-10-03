@@ -8,7 +8,7 @@ Algorithm is coded in pure `C99`. You can compile it with `C89` compiler easily,
 
 ### Installation
 
-`divide-and-conquer-eigenvalues` requires only `C89`-compatible compiler and `make` utility.
+`divide-and-conquer-eigenvalues` requires only `C99`-compatible compiler and `make` utility.
 
 ```sh
 $ cd divide-and-conquer-eigenvalues
