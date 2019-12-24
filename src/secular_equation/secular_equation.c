@@ -138,6 +138,9 @@ long double solve_secular_equation(long double rho, const matrix_type_t D, const
         }
         error = fabsl(1 / rho + calculate_func(D, v, lambda_init));        
         iter++;
+        if (iter > 10) {
+            break;
+        }        
     }
 
 #ifdef SECULAR_EQUATION_DEBUG

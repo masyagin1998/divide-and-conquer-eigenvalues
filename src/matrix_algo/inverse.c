@@ -77,6 +77,8 @@ matrix_type_t matrix_adjoint(const matrix_type_t mat)
     for (i = 1; i <= matrix_height(mat); i++) {
         for (j = 1; j <= matrix_width(mat); j++) {
             long double cell;
+
+            printf("%d:%d\n", i, j);
             
             matrix_cofactor(mat, tmp, i, j);
 

@@ -14,7 +14,7 @@
   matrix_divide_and_conquer will print
   some debug info to stdout.
  */
-/* #define DIVIDE_AND_CONQUER_DEBUG */
+#define DIVIDE_AND_CONQUER_DEBUG
 
 #ifdef DIVIDE_AND_CONQUER_DEBUG
 #include <stdio.h>
@@ -340,6 +340,7 @@ int matrix_divide_and_conquer(const matrix_type_t T, matrix_type_t*Q, matrix_typ
         if (is_zero(matrix_get(v, i, 1))) {
             continue;
         }
+        
         cell = matrix_get(lambda, jj, 1);
         matrix_set(eigenvalues, i, i, cell);
         tmp1 = matrix_diag(n_deflated, cell);
