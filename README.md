@@ -44,3 +44,6 @@ In russian:
 
 ### Many thanks to:
 - Golubkov A. Yu. - BMSTU algebra, Galois theory, Rings theory and NMLA teacher;
+
+### Referenced by:
+- [Shrey Dabhi, Manojkumar Parmar. Eigenvector Component Calculation SpeedupoverNumPyfor High-Performance Computing](https://arxiv.org/pdf/2002.04989.pdf)
