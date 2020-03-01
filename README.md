@@ -46,4 +46,4 @@ In russian:
 - Golubkov A. Yu. - BMSTU algebra, Galois theory, Rings theory and NMLA teacher;
 
 ### Referenced by:
-- [Shrey Dabhi, Manojkumar Parmar. Eigenvector Component Calculation SpeedupoverNumPyfor High-Performance Computing](https://arxiv.org/pdf/2002.04989.pdf)
+- [Shrey Dabhi, Manojkumar Parmar. Eigenvector Component Calculation Speedup over NumPy for High-Performance Computing](https://arxiv.org/pdf/2002.04989.pdf)
